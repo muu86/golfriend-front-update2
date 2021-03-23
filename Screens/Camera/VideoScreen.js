@@ -5,15 +5,19 @@ import {
     Button,
     Text,
     TouchableOpacity,
+    Dimensions,
 } from 'react-native';
 
 import { Video, AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system';
 import AuthContext from '../../Context/AuthContext';
 
+const SERVER_IP = "192.168.55.147";
 const POSE_NAME = ["address", "take away", "back swing", "top", "down swing", "impact", "release", "follow through"];
 
 const VideoScreen = ({ navigation, route }) => {
+    const WIDTH = Dimensions.get('window').width; 
+
     const video = useRef();
     const [status, setStatus] = useState({});
     const { getJWT } = useContext(AuthContext);
@@ -27,7 +31,7 @@ const VideoScreen = ({ navigation, route }) => {
             uri: route.params.uri,
         })
         // console.log(uri);
-        let result = await fetch('http://121.138.83.4:80/uploads', {
+        let result = await fetch(`http://${SERVER_IP}:80/uploads`, {
             method : 'POST',
             headers : {
                 'Content-Type': 'multipart/form-data',
@@ -53,7 +57,7 @@ const VideoScreen = ({ navigation, route }) => {
 
         let images = imageNumber.map(index => (
             FileSystem.downloadAsync(
-                `http://121.138.83.4:80/images/${imagePath}/${index}`,
+                `http://${SERVER_IP}:80/images/${imagePath}/${index}`,
                 FileSystem.documentDirectory + imagePath + `/${index}.png`
             )
         ));
@@ -79,17 +83,30 @@ const VideoScreen = ({ navigation, route }) => {
 
     return (
         <View style={styles.container}>
-            <Video
-                ref={video}
-                style={{ flex: 1 }}
-                source={{
-                    uri: route.params.uri,
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'blue',
                 }}
-                useNativeControls
-                isLooping
-                resizeMode='contain'
-                onPlaybackStatusUpdate={status => setStatus(() => status)}
-            />
+            >
+                <Video
+                    ref={video}
+                    style={{
+                        flex: 1,
+                        width: WIDTH,
+                        height: WIDTH * 4 / 3,
+                    }}
+                    source={{
+                        uri: route.params.uri,
+                    }}
+                    useNativeControls
+                    isLooping
+                    resizeMode='contain'
+                    onPlaybackStatusUpdate={status => setStatus(() => status)}
+                />
+            </View>
             <View style={styles.buttons}>
                 {/* <Button
                     title={status.isPlaying ? 'Pause' : 'Play'}
@@ -140,14 +157,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
+        alignItems: 'center',
         backgroundColor: '#ecf0f1',
     },
-    video: {
-        flex: 1,
-        alignSelf: 'center',
-        width: 320,
-        height: 200,
-    },
+    // video: {
+    //     flex: 1,
+    //     alignSelf: 'center',
+    //     width: 320,
+    //     height: 200,
+    // },
     buttons: {
         flex: 0.3,
         flexDirection: 'row',

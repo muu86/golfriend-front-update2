@@ -13,9 +13,11 @@ import {
 import { Camera } from 'expo-camera';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Animated from 'react-native-reanimated';
-import { Audio } from 'expo-av';
+import { Audio, Video } from 'expo-av';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import * as ImagePicker from 'expo-image-picker';
 // import * as MediaLibrary from 'expo-media-library';
 
@@ -24,15 +26,20 @@ const RecordScreen = ({ navigation }) => {
     const WIDTH = Dimensions.get('window').width; 
 
     const [hasPermission, setHasPermission] = useState(null);
+    const [audioPermission, setHasAudioPermission ] = useState(null);
+    
     const [type, setType] = useState(Camera.Constants.Type.back);
     const [cameraReady , setCameraReady] = useState(false);
     // const [modalVisible, setModalVisible] = useState(false);
 
-    const [audioPermission, setHasAudioPermission ] = useState(null);
+    const [videoUri, setVideoUri] = useState(null);
     const [recording, setRecording] = useState(false);
     const [modalup, setModalup] = useState(false);
-    // const [ uri, setUri] = useState(null);
+    
+    const [status, setStatus] = useState({});
+
     const camera = React.useRef();
+    const video = React.useRef();
 
     // 동영상&오디오&카메라저장 권한 승인
     useEffect(() => {
@@ -70,9 +77,10 @@ const RecordScreen = ({ navigation }) => {
             console.log('Start Recording Video')
             const result = await camera.current.recordAsync(options);
             console.log(result.uri)
-            navigation.navigate('Video', {
-                uri: result.uri,
-            })
+            setVideoUri(result.uri);
+            // navigation.navigate('Video', {
+            //     uri: result.uri,
+            // })
         }
     };
 
@@ -107,10 +115,10 @@ const RecordScreen = ({ navigation }) => {
         console.log(result);
     
         if (!result.cancelled) {
-        //   setImage(result.uri);
-          navigation.navigate('Video', {
-              uri: result.uri,
-          });
+          setVideoUri(result.uri);
+        //   navigation.navigate('Video', {
+        //       uri: result.uri,
+        //   });
         }
     };
 
@@ -131,9 +139,14 @@ const RecordScreen = ({ navigation }) => {
 
     return(    
     <View style={styles.container}>
-    <StatusBar hidden = {true }/>       
+    <StatusBar 
+        hidden
+        // backgroundColor="transparent"
+        // style="light"
+    />       
         <View 
-            style={{ 
+            style={{
+                flex: 0.5,
                 flexDirection:'row', 
                 justifyContent: 'space-between', 
                 alignItems: 'center',
@@ -142,21 +155,54 @@ const RecordScreen = ({ navigation }) => {
         >
             {/* 정면 뷰, 측면 뷰 버튼 */}
             <View style={{ flex: 3, justifyContent: 'flex-start', flexDirection: 'row', }}>
-                <View style ={styles.headerButton}>
-                    <TouchableOpacity>
-                        <Text style={styles.buttonText}>
+                {/* <View style ={styles.headerButton}> */}
+                    <TouchableOpacity
+                        style={{
+                            marginHorizontal: 20,
+                        }}
+                    >
+                        <MaterialCommunityIcons name='face' size={30} color="black" />
+                        <Text 
+                            style={styles.buttonText}
+                        >
                             정면
                         </Text>
                     </TouchableOpacity>
-                </View>
+                {/* </View> */}
 
-                <View style ={styles.headerButton} >
-                    <TouchableOpacity>
+                {/* <View style ={styles.headerButton} > */}
+                    <TouchableOpacity
+                        style={{
+                            marginHorizontal: 20,
+                        }}
+                    >
+                        <MaterialCommunityIcons name='face-profile' size={30} color="black" />
                         <Text style={styles.buttonText}>
                             측면
                         </Text>
                     </TouchableOpacity>
-                </View>
+                {/* </View> */}
+            </View>
+                        {/* 갤러리 선택 버튼 */}
+                        <View 
+                style={{ 
+                    flex: 1, 
+                    justifyContent: 'center', 
+                    alignItems: 'center' 
+                }}
+            >
+                <TouchableOpacity
+                    style={{
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                    onPress={pickVideo}
+                >
+                    <FontAwesome5 name ='photo-video' size ={30} color ={'black'}/>
+                    <Text
+                        style={{ fontSize: 10, }}
+                    >갤러리</Text>
+                </TouchableOpacity>
             </View>
             {/* 뒤로가기 */}
             <TouchableOpacity 
@@ -204,62 +250,69 @@ const RecordScreen = ({ navigation }) => {
       </Modal> */}
        {/* 카메라 동여상 촬영 종료시 작동되는 모달 페이지 종료*/}  
 
-        <Camera 
-            style={styles.camera} 
-            ratio='4:3'
-            type= { type }
-            ref={camera}
-            onCameraReady={() => setCameraReady(true)}
-        /> 
+        <View
+            style={{
+                flex: 6,
+                // backgroundColor: 'red',
+                justifyContent: 'center',
+                alignItems: 'center',
+            }}
+        >
+        {!videoUri ? (
+            <Camera 
+                style={{
+                    // width: "96%",
+                    // height:"92%",
+                    // flex: 3,
+                    // position: 'absolute',
+                    // top: 50,
+                    // bottom: 20,
+                    width: WIDTH,
+                    height: WIDTH * 4 / 3,
+                    // marginBottom:9,
+                    justifyContent:'flex-end',
+                }} 
+                ratio='4:3'
+                type= { type }
+                ref={camera}
+                onCameraReady={() => setCameraReady(true)}
+            />
+
+        ) : (
+            <Video
+                        ref={video}
+                        style={{
+                            // flex: 1,
+                            width: WIDTH,
+                            height: WIDTH * 4 / 3,
+                        }}
+                        source={{
+                            uri: videoUri,
+                        }}
+                        useNativeControls
+                        isLooping
+                        resizeMode='cover'
+                        onPlaybackStatusUpdate={status => setStatus(() => status)}
+                    />
+        )}
+
+        
+        </View>
 
         {/* 하단 버튼 박스 */}
         <View 
             style={{
-                flex: 0.5,
+                flex: 2,
                 flexDirection:'row',
                 // color:"#FFF",
                 // width:"100%",
                 // height:150,
                 justifyContent:'center',
-                alignItems: 'center',
+                alignItems: 'center',                
+                // backgroundColor: 'black'
             }}
         >
-            {/* 갤러리 선택 버튼 */}
-            <View 
-                style={{ 
-                    flex: 1, 
-                    justifyContent: 'center', 
-                    alignItems: 'center' 
-                }}
-            >
-                <TouchableOpacity onPress={pickVideo}>
-                    <FontAwesome5 name ='photo-video' size ={30} color ={'black'}/>
-                </TouchableOpacity>
-            </View>
-        
-            {/* 녹화 버튼 */}
-            <View  
-                style={{
-                    // flex: 1,
-                    justifyContent: 'center',
-                    alignItems:"center",
-                    width: WIDTH * 0.25,
-                    height: WIDTH * 0.25,
-                    // backgroundColor: 'black',
-                    borderRadius: WIDTH * 0.2 * 0.5,
-                    borderColor: 'black',
-                    borderWidth: 5,
-                }}
-            >
-                    <TouchableOpacity
-                        onPress = { recording ?  stopRecord : record}>
-                    
-                        <Animated.View style ={ recording ? styles.startRecordingButton : styles.stopRecordingButton }>
-                                    
-                        </Animated.View>    
-                        
-                    </TouchableOpacity>
-            </View>
+
             {/* 카메라 토클 버튼 */}
             <TouchableOpacity
                 style={{
@@ -273,7 +326,74 @@ const RecordScreen = ({ navigation }) => {
                     ? Camera.Constants.Type.front
                     : Camera.Constants.Type.back
                 );}}>
-                <FontAwesome name = 'repeat' size={30} style={{color:"black"}} />
+                <Icon name = 'ios-camera-reverse-outline' size={30} style={{color:"black"}} />
+                <Text style={{ fontSize: 10, }}>카메라 전환</Text>
+            </TouchableOpacity>
+        
+            {/* 녹화 버튼 */}
+            {/* <View  
+                style={{
+                    // flex: 1,
+                    justifyContent: 'center',
+                    alignItems:"center",
+                    width: WIDTH * 0.4,
+                    height: WIDTH * 0.4,
+                    // backgroundColor: 'black',
+                    borderRadius: WIDTH * 0.4 * 0.5,
+                    borderColor: '#90ee90',
+                    borderWidth: 5,
+                    // backgroundColor: 'blue'
+                }}
+            > */}
+                    <TouchableOpacity
+                        style={{
+                    // flex: 1,
+                    justifyContent: 'center',
+                    alignItems:"center",
+                    width: WIDTH * 0.4,
+                    height: WIDTH * 0.4,
+                    // backgroundColor: 'black',
+                    borderRadius: WIDTH * 0.4 * 0.5,
+                    borderColor: '#73E681',
+                    borderWidth: 5,
+                    // backgroundColor: 'blue'
+                }}
+                        onPress = { recording ?  stopRecord : record}>
+                    
+                        {!videoUri ? 
+                            // <Animated.View style ={ recording ? styles.startRecordingButton : styles.stopRecordingButton }>
+                            //     {/* <Text>녹화</Text> */}
+                            // </Animated.View>
+                            !recording ? (
+                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                    <FontAwesome5 name="video" size={70} color="#73E681" />
+                                    {/* <Text>촬영</Text> */}
+                                </View>   
+                            ) : (
+                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                    <FontAwesome5 name="video-slash" size={70} color="#73E681" />
+                                    {/* <Text>정지</Text> */}
+                                </View>  
+                        ) : (
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <FontAwesome name="cloud-upload" size={70} color="#73E681" />
+                                <Text>분석</Text>
+                            </View>
+                        )}
+                        
+                    </TouchableOpacity>
+            {/* </View> */}
+            
+            {/* 다시 찍기 */}
+            <TouchableOpacity
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+                onPress={() => setVideoUri(null)}>
+                <MaterialIcons name = 'replay' size={30} style={{color:"black"}} />
+                <Text style={{ fontSize: 10, }}>다시 찍기</Text>
             </TouchableOpacity>
         </View>
 
@@ -287,39 +407,30 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems:'center',
+        // marginTop: 30,
         // backgroundColor:"#000"
     },
-    camera: {
-    //   width:"96%",
-    //   height:"92%",
-        flex: 1,
-        // position: 'absolute',
-        top: 80,
-        bottom: 20,
-        width: 3 * 130,
-        height: 4 * 130,
-        marginBottom:9,
-        justifyContent:'flex-end',
-    },
+
     text: {
       fontSize: 18,
       color: 'white',
     },
-    headerButton:{
-        width:67,
-        height:40,
-        borderWidth:0.7,
-        backgroundColor:"#FFFFFF",
-        marginTop:7,
-        marginBottom:7,
-        marginLeft:12,
-        borderRadius:25,
-        justifyContent:'center',
-        borderColor:"#73E681",
-    },
+    // headerButton:{
+    //     width:67,
+    //     height:40,
+    //     borderWidth:0.7,
+    //     backgroundColor:"#FFFFFF",
+    //     marginTop:7,
+    //     marginBottom:7,
+    //     marginLeft:12,
+    //     borderRadius:25,
+    //     justifyContent:'center',
+    //     borderColor:"#73E681",
+    // },
     buttonText:{
         textAlign:'center',
-        color:"#73E681"
+        // color:"#73E681"
+        color: 'black',
     },
     startRecordingButton:{
         backgroundColor:"#FF0000",
@@ -335,11 +446,11 @@ const styles = StyleSheet.create({
         shadowRadius:10,
     },
     stopRecordingButton:{
-        backgroundColor:"#FF0000",
+        // backgroundColor:"#FF0000",
         alignItems:"center",
         justifyContent:"center",
-        width: 80,
-        height: 80,
+        width: 40,
+        height: 40,
         borderRadius: 50,
         shadowColor:"#4169e1",
         shadowOffset:{ height:10 },

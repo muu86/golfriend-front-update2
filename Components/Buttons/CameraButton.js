@@ -44,38 +44,42 @@ import Icon from 'react-native-vector-icons/Ionicons';
 //     }
 // }
 
-const CameraButton = () => {
-    return (
-        <View style={{ position:'absolute', alignItems:"center" }}>
-            <View style ={[styles.button,]}>
-                {/* <TouchableOpacity onPress={}> */}
-                    <View> 
-                        <Icon name ='camera' size={65} color='#FFF'/>
-                    </View>   
-                {/* </TouchableOpacity> */}
-            </View>
-        </View>                       
-    )
+const CameraButton = ({ focused }) => {
+    if (focused) {
+        return <View />
+    }
+
+        return (
+            // <View style={{ position:'absolute', alignItems:"center" }}>
+                <View style ={[styles.button,]}>
+                    {/* <TouchableOpacity onPress={}> */}
+                        <View> 
+                            <Icon name ='camera' size={60} color='#FFF'/>
+                        </View>   
+                    {/* </TouchableOpacity> */}
+                </View>
+            // </View>                       
+        )
 }
 
 export default CameraButton;
 
 const styles = StyleSheet.create({
     button:{
-        backgroundColor:"#4169e1",
+        backgroundColor:"#73E681",
         alignItems:"center",
         justifyContent:"center",
-        width: 78,
-        height: 78,
+        width: 80,
+        height: 80,
         borderRadius: 40,
         position:'absolute',
-        top:-25,
-        shadowColor:"#4169e1",
-        shadowOffset:{ height:10 },
-        shadowOpacity: 0.3,
-        borderColor:"#FFF",
-        shadowRadius:10,
-        borderWidth:1.5,
-        marginLeft:100
+        bottom: 5,
+        // shadowColor:"#4169e1",
+        shadowColor: 'blue',
+        // borderColor:"#FFF",
+        // borderWidth:1.5,
+        elevation: 7,
+        // backgroundColor: 'black',
+        // marginLeft:100
     }
 });

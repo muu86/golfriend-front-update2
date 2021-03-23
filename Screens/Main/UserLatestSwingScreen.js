@@ -4,18 +4,22 @@ import {
     View,
     Text,
     Modal,
+    Image,
     Button, 
     NativeAppEventEmitter, 
-    StatusBar, 
+    // StatusBar, 
     TouchableOpacity, 
     Dimensions, 
     SafeAreaView 
 } from "react-native";
+import { StatusBar } from 'expo-status-bar';
 import { ScrollView } from "react-native-gesture-handler";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 
 import AuthContext from '../../Context/AuthContext';
+
+const SERVER_IP = "192.168.55.147";
 
 const ProfileModal = ({ modalVisible, setModalVisible }) => {
     const { signOut } = useContext(AuthContext);
@@ -66,32 +70,93 @@ const UserLatestSwingScreen = ({ navigation }) => {
     const [data, setData] = useState(null);
 
     // 데이터 가져오는 useEffect
-    // useEffect(() => {
-    //     const token = getJWT();
+    useEffect(() => {
         
-    //     (async () => {
-    //         await axios.get('http://121.138.83.4:80/latest-swing', {
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`
-    //             }
-    //         })
-    //         .then(res => {
-    //             console.log(res.data);
-    //             setData(res.data);
-    //         });
-    //     })();
-    // }, []);
+        (async () => {
+            const userToken = await getJWT();
+            await axios.get(`http://${SERVER_IP}:80/latest-swing`, {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            })
+            .then(res => {
+                console.log(res.data);
+                setData(res.data);
+            });
+        })();
+        
+        console.log("최근 분석 useEffect 실행");
+    });
 
     return (
         <View style={styles.maincontainer}>
-            <StatusBar backgroundColor ={"#FFF"} barStyle={"dark-content"}></StatusBar>
-            <View style ={{ flexDirection:"row", justifyContent:"space-between" }}>
-                <Text style={styles.Text}>{data}님 환영합니다!</Text>
-                <TouchableOpacity onPress={() => { setModalVisible(true) }}>
+            <StatusBar 
+                backgroundColor="#73E681"
+                
+                // style="light"
+            />
+
+
+            <View 
+                style ={{ 
+                    flex: 0.1, 
+                    flexDirection:"row", 
+                    justifyContent:"space-around", 
+                    alignItems: 'center',
+                    // backgroundColor: 'gray' 
+                }}
+            >
+                {/* 로고 */}
+                {/* <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: 'blue',
+                    }}
+                > */}
+                    <Image
+                        source={require('../../assets/GolfriendFlag.png')} 
+                        // resizeMode='center'
+                        style={{
+                            flex: 0.15,
+                            width: '100%',
+                            height: '100%',
+                            resizeMode: 'contain',
+
+                            // maxWidth: '40%',
+                            // marginLeft:24, 
+                            // marginTop:45,
+                            // alignSelf: 'center',
+                            // alignContent: 'center',
+                            // resizeMode: 'contain',
+                            // backgroundColor: 'blue',
+                        }}
+                    />
+                {/* </View> */}
+                {/* 문구 */}
+                <Text 
+                    style={{
+                        fontSize:25,
+                        fontWeight:'bold',
+                        // marginHorizontal:31,
+                        // marginTop:30,
+                        textAlign:"left"
+                    }}
+                >
+                    {data}님 환영합니다!
+                </Text>
+                {/* 프로필 버튼 */}
+                <TouchableOpacity
+                    style={{
+                        flex: 0.1,
+                    }}
+                    onPress={() => { setModalVisible(true) }}
+                >
                     <FontAwesome 
-                        style={{ marginRight:31, marginTop:43 }}
                         name={'user'}
-                        size={20}
+                        size={30}
                         color={'#000'}
                     />
                 </TouchableOpacity>
@@ -151,6 +216,7 @@ export default UserLatestSwingScreen;
 const styles = StyleSheet.create({
     maincontainer:{
         flex:1,
+        paddingTop: 30,
         backgroundColor:"white",
         flexDirection:"column",
     },

@@ -12,6 +12,8 @@ import SignInNavigator from './Screens/SignInNavigator';
 import SplashScreen from './Screens/SplashScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 
+const SERVER_IP = "192.168.55.147";
+
 // 토큰 관리할 리듀서
 const tokenReducer = (prevState, action) => {
   switch (action.type) {
@@ -34,9 +36,6 @@ const tokenReducer = (prevState, action) => {
       };
   }
 }
-
-// RootStack
-const RootStack = createStackNavigator();
 
 export default function App() {
   // 로고
@@ -77,7 +76,7 @@ export default function App() {
   const authContext = React.useMemo(
     () => ({
       signIn: async data => {
-        const result = await axios.post('http://121.138.83.4:80/login', {
+        const result = await axios.post(`http://${SERVER_IP}:80/login`, {
           email: data.email,
           password: data.password,
         })
@@ -94,7 +93,7 @@ export default function App() {
         dispatch({ type: 'SIGN_OUT' })
       },
       signUp: async data => {
-        const result = await axios.post('http://121.138.83.4:80/signup', {
+        const result = await axios.post(`http://${SERVER_IP}:80/signup`, {
           email: data.email,
           lastname : data.lastname,
           firstname: data.firstname,
@@ -134,12 +133,3 @@ export default function App() {
     </AuthContext.Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
