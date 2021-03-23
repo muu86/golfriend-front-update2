@@ -1,10 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
-import {  TouchableOpacity } from 'react-native-gesture-handler';
+import { View, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+// import {   } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-import CameraButtonContext from '../../Context/CameraButtonContext';
-
 
 // export default class CameraButton extends React.Component {
 
@@ -48,23 +45,17 @@ import CameraButtonContext from '../../Context/CameraButtonContext';
 // }
 
 const CameraButton = () => {
-    const cameraButton = useContext(CameraButtonContext);
-
-    if (cameraButton) {
-        return (
+    return (
         <View style={{ position:'absolute', alignItems:"center" }}>
             <View style ={[styles.button,]}>
-            <TouchableOpacity onPress={}>
-                <View> 
-                    <Icon name ='camera' size={65} color='#FFF'/>
-                </View>   
-            </TouchableOpacity>
-        </View>
-        </View>
-        )
-    } else {
-        return <View />
-    }
+                {/* <TouchableOpacity onPress={}> */}
+                    <View> 
+                        <Icon name ='camera' size={65} color='#FFF'/>
+                    </View>   
+                {/* </TouchableOpacity> */}
+            </View>
+        </View>                       
+    )
 }
 
 export default CameraButton;
