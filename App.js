@@ -107,8 +107,9 @@ export default function App() {
         dispatch({ type: 'SIGN_IN', token: result.data });
         console.log('토큰이 저장되었습니다.');
       },
-      getJWT: () => {
-        return state.userToken;
+      getJWT: async () => {
+        const result = await SecureStore.getItemAsync('userToken');
+        return result;
       },
       // checkIdentity: async () => {
       //   const email = 

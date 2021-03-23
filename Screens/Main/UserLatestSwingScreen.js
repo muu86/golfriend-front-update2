@@ -64,21 +64,23 @@ const UserLatestSwingScreen = ({ navigation }) => {
 
     const { getJWT } = useContext(AuthContext);
     const [data, setData] = useState(null);
-    useEffect(() => {
-        const token = getJWT();
+
+    // 데이터 가져오는 useEffect
+    // useEffect(() => {
+    //     const token = getJWT();
         
-        (async () => {
-            await axios.get('http://121.138.83.4:80/latest-swing', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
-            .then(res => {
-                console.log(res.data);
-                setData(res.data);
-            });
-        })();
-    }, []);
+    //     (async () => {
+    //         await axios.get('http://121.138.83.4:80/latest-swing', {
+    //             headers: {
+    //                 Authorization: `Bearer ${token}`
+    //             }
+    //         })
+    //         .then(res => {
+    //             console.log(res.data);
+    //             setData(res.data);
+    //         });
+    //     })();
+    // }, []);
 
     return (
         <View style={styles.maincontainer}>

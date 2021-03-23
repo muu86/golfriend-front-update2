@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
         height: 78,
         borderRadius: 40,
         position:'absolute',
-        top:-55,
+        top:-25,
         shadowColor:"#4169e1",
         shadowOffset:{ height:10 },
         shadowOpacity: 0.3,

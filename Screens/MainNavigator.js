@@ -10,7 +10,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import UserLatestSwingScreen from '../Screens/Main/UserLatestSwingScreen';
-import CameraScreen from './Main/CameraScreen';
+import CameraStackNavigator from './Main/CameraStackNavigator';
 import CameraButton from '../Components/Buttons/CameraButton';
 import UserSwingDataScreen from './Main/UserSwingDataScreen';
 // import VideoRecord from '../Screens/VideoRecordScreen';
@@ -45,7 +45,7 @@ const MainNavigator = () => {
       <MainStack.Screen name = "UserLatestSwing" component ={UserLatestSwingScreen} options={{ title: "최근 분석" }} />
       <MainStack.Screen 
         name = "Camera" 
-        component ={CameraScreen}
+        component ={CameraStackNavigator}
         options={{
           title: "",
           tabBarIcon: ({color, size, focused}) => (
