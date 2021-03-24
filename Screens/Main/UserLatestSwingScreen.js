@@ -18,6 +18,7 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios';
 
 import AuthContext from '../../Context/AuthContext';
+import ImproveButtonList from '../../Components/UserSwingData/ImproveButtonList';
 
 const SERVER_IP = "121.138.83.4";
 
@@ -63,12 +64,11 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
 
 const UserLatestSwingScreen = ({ navigation }) => {
     // const { width, height } = Dimensions.get('window');
-
+    
     const [modalVisible, setModalVisible] = useState(false);
+    const { signOut, getJWT } = useContext(AuthContext);
 
-    const { getJWT } = useContext(AuthContext);
     const [data, setData] = useState(null);
-
     // 데이터 가져오는 useEffect
     useEffect(() => {
         
@@ -80,13 +80,60 @@ const UserLatestSwingScreen = ({ navigation }) => {
                 }
             })
             .then(res => {
+                console.log(res);
                 console.log(res.data);
                 setData(res.data);
+            })
+            // 토큰 유효기간이 지나 401 에러뜨면 자동 로그 아웃
+            .catch(async error => {
+                if (error.response.status === 401) {
+                    await signOut();
+                }
             });
         })();
         
         console.log("최근 분석 useEffect 실행");
-    });
+    }, []);
+
+    // 서버에서 가져온 데이터 확인용 Effect
+    useEffect(() => {
+        if (data) {
+            console.log(typeof data.swingData);
+        }
+    }, [data]);
+
+    // useEffect(() => {
+    //     if (data) {
+    //         const poseAverage = Object.keys(data.swingData)
+    //         .filter((item, idex) => {
+    //             return !isNaN(Number(item));
+    //         })
+    //         .map((item, index) => {
+    //             console.log('map 시작');
+    //             console.log('item: ', item, typeof item);
+    //             const poseFeedbackLength = Object.keys(data.swingData[item]).length;
+    //             let posePointTotal = 0;
+    //             if (poseFeedbackLength !== 0) {
+    //                 posePointTotal = Object.keys(data.swingData[item]).reduce((acc, cur) => {
+    //                     console.log('item: ', Object.keys(item))
+    //                     console.log('acc: ', acc, typeof acc, 'cur: ', cur, typeof cur);
+    //                     return acc + data.swingData[item][cur]["0"]
+    //                 }, 0);
+    //             }
+    //             console.log('item: ', item);
+    //             // console.log(typeof item);
+    //             console.log('길이는: ', poseFeedbackLength);
+    //             console.log('토탈: ', posePointTotal);
+    //             if (isNaN(posePointTotal / poseFeedbackLength)) {
+    //                 return 0;
+    //             }
+    //             return posePointTotal / poseFeedbackLength;
+    //         });
+    
+    //         console.log("-------------------");
+    //         console.log(poseAverage);
+    //     }
+    // })
 
     return (
         <View style={styles.maincontainer}>
@@ -145,7 +192,8 @@ const UserLatestSwingScreen = ({ navigation }) => {
                         textAlign:"left"
                     }}
                 >
-                    {data}님 환영합니다!
+                    {data ? data.userName : "Text"}
+                    님 환영합니다!
                 </Text>
                 {/* 프로필 버튼 */}
                 <TouchableOpacity
@@ -202,10 +250,10 @@ const UserLatestSwingScreen = ({ navigation }) => {
                 <Text style ={ styles.Text}>
                     개선사항
                 </Text>
-
-                {/* <ImproveButton />
-                <ImproveButton />
-                <ImproveButton /> */}
+                
+                {/* 데이터를 받으면 개선 사항 뿌려줌 */}
+                {data && <ImproveButtonList data={data.swingData} />}
+    
             </ScrollView>
         </View>
     )

@@ -65,6 +65,23 @@ export default function App() {
         console.log(e);
       }
 
+      // 토큰이 있으면 서버로 GET 보내서 토큰 유효기간 지났는지 체크
+      console.log('토큰 유효성을 체크합니다.');
+      if (userToken) {
+        await axios.get(`http://${SERVER_IP}:80/check-token`, {
+          headers: {
+            'Authorization': `Bearer ${userToken}`,
+          }
+        })
+        .catch(error => {
+          console.log('토큰 유효성 http status: ', error.response.status);
+          if (error.response.status === 401) {
+            authContext.signOut();
+            return;
+          }
+        });
+      }
+
       if (!userToken) { console.log('Token이 없어요'); }
       console.log(userToken);
 
@@ -91,6 +108,7 @@ export default function App() {
       signOut: async () => {
         await SecureStore.deleteItemAsync('userToken');
         dispatch({ type: 'SIGN_OUT' })
+        console.log('로그 아웃!');
       },
       signUp: async data => {
         const result = await axios.post(`http://${SERVER_IP}:80/signup`, {

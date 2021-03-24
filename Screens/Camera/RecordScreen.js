@@ -31,8 +31,9 @@ const RecordScreen = ({ navigation }) => {
 
     const WIDTH = Dimensions.get('window').width; 
 
-    const [hasPermission, setHasPermission] = useState(null);
+    const [cameraPermission, setcameraPermission] = useState(null);
     const [audioPermission, setHasAudioPermission ] = useState(null);
+    const [mediaPermission, setMediaPermission] = useState(null);
     
     const [type, setType] = useState(Camera.Constants.Type.back);
     const [cameraReady , setCameraReady] = useState(false);
@@ -51,15 +52,15 @@ const RecordScreen = ({ navigation }) => {
     // 동영상&오디오&카메라저장 권한 승인
     useEffect(() => {
         (async () => {
-        const { status } = await Camera.requestPermissionsAsync();
-        setHasPermission(status === 'granted');
+            const { status } = await Camera.requestPermissionsAsync();
+            setcameraPermission(status === 'granted');
         })();
     }, []);
   
     useEffect(()=>{
         (async()=>{
-        const { status } = await Audio.requestPermissionsAsync();
-        setHasAudioPermission(status === 'granted');
+            const { status } = await Audio.requestPermissionsAsync();
+            setHasAudioPermission(status === 'granted');
         })();
     }, []);
 
@@ -67,9 +68,7 @@ const RecordScreen = ({ navigation }) => {
     useEffect(() => {
         (async () => {
             const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-            if (status !== 'granted') {
-              alert('Sorry, we need camera roll permissions to make this work!');
-            }
+            setMediaPermission(status === 'granted');
         })();
     }, []); 
  
@@ -152,17 +151,21 @@ const RecordScreen = ({ navigation }) => {
         console.log(result);        
         console.log('uploading to server')
 
-        let imageNumber = Object.keys(result);
+        // let imageNumber = Object.keys(result);
         // Array.splice => imageNumber 는 "image_path" 제외된 숫자로 된 Array
     
-        const imagePath = result[imageNumber.splice(-1, 1)];
-        console.log(imagePath);
+        // const imagePath = result[imageNumber.splice(-1, 1)];
+        // console.log(imagePath);
+        const imagePath = result['filePath'];
+        console.log('이미지 이름: ', imagePath);
 
         await FileSystem.makeDirectoryAsync(
             FileSystem.documentDirectory + imagePath
         );
-
-        let images = imageNumber.map(index => (
+        
+        // indexes = [0, 1, 2, 3, 4, 5, 6, 7]
+        const indexes = [...Array(8).keys()]; 
+        let images = indexes.map(index => (
             FileSystem.downloadAsync(
                 `http://${SERVER_IP}:80/images/${imagePath}/${index}`,
                 FileSystem.documentDirectory + imagePath + `/${index}.png`
@@ -170,10 +173,7 @@ const RecordScreen = ({ navigation }) => {
         ));
         images = await Promise.all(images);
 
-        const data = Object.keys(result)
-                        .filter(key => (
-                            key !== 'image_path'
-                        ))
+        const data = indexes
                         .map(key => ({
                             key: POSE_NAME[key],
                             feedback: result[key],
@@ -188,19 +188,25 @@ const RecordScreen = ({ navigation }) => {
         })
     }
 
-    if (hasPermission === null) {
+    if (cameraPermission === null) {
       return <View />;
     }
-    if (hasPermission === false) {
+    if (cameraPermission === false) {
       return <Text>No access to camera</Text>;
     }
   
-
     if(audioPermission === null){
       return <View />;
     } 
     if (audioPermission === false){
       return <Text>No access to Audio</Text>;
+    }
+
+    if (mediaPermission === null){
+        return <View />;
+    } 
+    if (mediaPermission === false){
+        return <Text>No access to Media</Text>;
     }
 
     return(    
@@ -413,18 +419,21 @@ const RecordScreen = ({ navigation }) => {
             > */}
                     <TouchableOpacity
                         style={{
-                    // flex: 1,
-                    justifyContent: 'center',
-                    alignItems:"center",
-                    width: WIDTH * 0.4,
-                    height: WIDTH * 0.4,
-                    // backgroundColor: 'black',
-                    borderRadius: WIDTH * 0.4 * 0.5,
-                    borderColor: '#73E681',
-                    borderWidth: 5,
-                    // backgroundColor: 'blue'
-                }}
-                        onPress = {!videoUri ? !recording ? stopRecord : record : sendVideo} >
+                            // flex: 1,
+                            justifyContent: 'center',
+                            alignItems:"center",
+                            width: WIDTH * 0.4,
+                            height: WIDTH * 0.4,
+                            // backgroundColor: 'black',
+                            borderRadius: WIDTH * 0.4 * 0.5,
+                            borderColor: '#73E681',
+                            borderWidth: 5,
+                            // backgroundColor: 'blue'
+                        }}
+                        onPress={!videoUri ? 
+                                    (!recording ? record : stopRecord)
+                                    : 
+                                    (sendVideo)} >
                     
                         {!videoUri ? 
                             // <Animated.View style ={ recording ? styles.startRecordingButton : styles.stopRecordingButton }>
@@ -440,7 +449,7 @@ const RecordScreen = ({ navigation }) => {
                                     <FontAwesome5 name="video-slash" size={70} color="#73E681" />
                                     {/* <Text>정지</Text> */}
                                 </View>  
-                        ) : (
+                            ) : (
                             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                                 <FontAwesome name="cloud-upload" size={70} color="#73E681" />
                                 <Text>분석</Text>
