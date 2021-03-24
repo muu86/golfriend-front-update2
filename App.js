@@ -12,7 +12,7 @@ import SignInNavigator from './Screens/SignInNavigator';
 import SplashScreen from './Screens/SplashScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 
-const SERVER_IP = "192.168.55.147";
+const SERVER_IP = "121.138.83.4";
 
 // 토큰 관리할 리듀서
 const tokenReducer = (prevState, action) => {

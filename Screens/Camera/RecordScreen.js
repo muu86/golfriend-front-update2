@@ -1,4 +1,4 @@
-import React, { useState, useEffect, PureComponent, useRef } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
     StyleSheet, 
     Text, 
@@ -11,15 +11,21 @@ import {
     Modal,
 } from 'react-native';
 import { Camera } from 'expo-camera';
+import { Audio, Video } from 'expo-av';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import AuthContext from '../../Context/AuthContext';
+
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Animated from 'react-native-reanimated';
-import { Audio, Video } from 'expo-av';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import * as ImagePicker from 'expo-image-picker';
 // import * as MediaLibrary from 'expo-media-library';
+
+const SERVER_IP = "121.138.83.4";
+const POSE_NAME = ["address", "take away", "back swing", "top", "down swing", "impact", "release", "follow through"];
 
 const RecordScreen = ({ navigation }) => {
 
@@ -30,16 +36,17 @@ const RecordScreen = ({ navigation }) => {
     
     const [type, setType] = useState(Camera.Constants.Type.back);
     const [cameraReady , setCameraReady] = useState(false);
+    const [status, setStatus] = useState({});
     // const [modalVisible, setModalVisible] = useState(false);
 
     const [videoUri, setVideoUri] = useState(null);
     const [recording, setRecording] = useState(false);
     const [modalup, setModalup] = useState(false);
-    
-    const [status, setStatus] = useState({});
 
-    const camera = React.useRef();
-    const video = React.useRef();
+    const { getJWT } = useContext(AuthContext);
+
+    const camera = useRef();
+    const video = useRef();
 
     // 동영상&오디오&카메라저장 권한 승인
     useEffect(() => {
@@ -121,6 +128,65 @@ const RecordScreen = ({ navigation }) => {
         //   });
         }
     };
+
+    const sendVideo = async () => {
+        const userToken = await getJWT();
+        const formData = new FormData();
+        formData.append('video',{
+            name: "video_upload",
+            type: 'video/mp4',
+            uri: videoUri,
+        })
+        // console.log(uri);
+        let result = await fetch(`http://${SERVER_IP}:80/uploads`, {
+            method : 'POST',
+            headers : {
+                'Content-Type': 'multipart/form-data',
+                'Authorization': `Bearer ${userToken}`, 
+            },
+            body: formData,
+        })
+        .then(res => res.json())
+        .catch(e => console.log(e));
+
+        console.log(result);        
+        console.log('uploading to server')
+
+        let imageNumber = Object.keys(result);
+        // Array.splice => imageNumber 는 "image_path" 제외된 숫자로 된 Array
+    
+        const imagePath = result[imageNumber.splice(-1, 1)];
+        console.log(imagePath);
+
+        await FileSystem.makeDirectoryAsync(
+            FileSystem.documentDirectory + imagePath
+        );
+
+        let images = imageNumber.map(index => (
+            FileSystem.downloadAsync(
+                `http://${SERVER_IP}:80/images/${imagePath}/${index}`,
+                FileSystem.documentDirectory + imagePath + `/${index}.png`
+            )
+        ));
+        images = await Promise.all(images);
+
+        const data = Object.keys(result)
+                        .filter(key => (
+                            key !== 'image_path'
+                        ))
+                        .map(key => ({
+                            key: POSE_NAME[key],
+                            feedback: result[key],
+                            image: images[key].uri,
+                        }));
+        
+        console.log(images);
+        console.log('Feedback 페이지로 이동');
+
+        navigation.navigate('Feedback', {
+            data: data,
+        })
+    }
 
     if (hasPermission === null) {
       return <View />;
@@ -358,7 +424,7 @@ const RecordScreen = ({ navigation }) => {
                     borderWidth: 5,
                     // backgroundColor: 'blue'
                 }}
-                        onPress = { recording ?  stopRecord : record}>
+                        onPress = {!videoUri ? !recording ? stopRecord : record : sendVideo} >
                     
                         {!videoUri ? 
                             // <Animated.View style ={ recording ? styles.startRecordingButton : styles.stopRecordingButton }>

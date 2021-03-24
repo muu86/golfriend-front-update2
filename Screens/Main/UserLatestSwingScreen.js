@@ -19,7 +19,7 @@ import axios from 'axios';
 
 import AuthContext from '../../Context/AuthContext';
 
-const SERVER_IP = "192.168.55.147";
+const SERVER_IP = "121.138.83.4";
 
 const ProfileModal = ({ modalVisible, setModalVisible }) => {
     const { signOut } = useContext(AuthContext);

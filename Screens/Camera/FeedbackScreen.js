@@ -176,7 +176,7 @@ const ImageList = ({ data, scrollX }) => {
                 keyExtractor={item => item.key}
                 horizontal
                 bounces={false}
-                decelerationRate={20}
+                decelerationRate={0}
                 // contentContainerStyle={{ alignItems: 'center' }}
                 snapToInterval={ITEM_SIZE}
                 scrollEventThrottle={16}
