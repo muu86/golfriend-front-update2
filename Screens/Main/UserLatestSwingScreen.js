@@ -10,15 +10,17 @@ import {
     // StatusBar, 
     TouchableOpacity, 
     Dimensions, 
-    SafeAreaView 
+    SafeAreaView,
 } from "react-native";
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView } from "react-native-gesture-handler";
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import { FontAwesome } from 'react-native-vector-icons';
 import axios from 'axios';
 
 import AuthContext from '../../Context/AuthContext';
-import ImproveButtonList from '../../Components/UserSwingData/ImproveButtonList';
+import Awards from '../../Components/UserSwingData/Awards';
+import ProShotAndImprovement from '../../Components/UserSwingData/ProShotAndImprovement';
+import PastFeedback from '../../Components/UserSwingData/PastFeedBack';
 
 const SERVER_IP = "121.138.83.4";
 
@@ -27,13 +29,13 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
 
     return (
         <View
-        style={{ 
-            position: 'absolute',
-            top: 20,
-            width: 300,
-            height: 300,
-            margin: 0,
-        }} 
+            style={{ 
+                position: 'absolute',
+                top: 20,
+                width: 300,
+                height: 300,
+                margin: 0,
+            }} 
         >
         <Modal
             animationType='slide'
@@ -68,27 +70,42 @@ const UserLatestSwingScreen = ({ navigation }) => {
     const [modalVisible, setModalVisible] = useState(false);
     const { signOut, getJWT } = useContext(AuthContext);
 
+    const [token, setToken] = useState(null);
     const [data, setData] = useState(null);
     // 데이터 가져오는 useEffect
     useEffect(() => {
         
         (async () => {
             const userToken = await getJWT();
-            await axios.get(`http://${SERVER_IP}:80/latest-swing`, {
+            setToken(userToken);
+            // await axios.get(`http://${SERVER_IP}:80/past-swing`, {
+            //     headers: {
+            //         Authorization: `Bearer ${userToken}`
+            //     }
+            // })
+            await axios.get(`http://${SERVER_IP}:80/past-swing`, {
                 headers: {
-                    Authorization: `Bearer ${userToken}`
+                    'Authorization': `Bearer ${token}`
                 }
             })
             .then(res => {
-                console.log(res);
-                console.log(res.data);
-                setData(res.data);
+                // console.log(res);
+                // console.log(res.data);
+                // console.log(res);
+                console.log('--------------------------');
+                // console.log(res);
+                console.log(res.data.swingData);
+                console.log(res.data.swingData[0]);
+                console.log(res.data.swingData[0]["0"]);
+                // setData(res.data);
             })
             // 토큰 유효기간이 지나 401 에러뜨면 자동 로그 아웃
             .catch(async error => {
+                console.log(error);
                 if (error.response.status === 401) {
                     await signOut();
                 }
+                console.log(error);
             });
         })();
         
@@ -102,39 +119,6 @@ const UserLatestSwingScreen = ({ navigation }) => {
         }
     }, [data]);
 
-    // useEffect(() => {
-    //     if (data) {
-    //         const poseAverage = Object.keys(data.swingData)
-    //         .filter((item, idex) => {
-    //             return !isNaN(Number(item));
-    //         })
-    //         .map((item, index) => {
-    //             console.log('map 시작');
-    //             console.log('item: ', item, typeof item);
-    //             const poseFeedbackLength = Object.keys(data.swingData[item]).length;
-    //             let posePointTotal = 0;
-    //             if (poseFeedbackLength !== 0) {
-    //                 posePointTotal = Object.keys(data.swingData[item]).reduce((acc, cur) => {
-    //                     console.log('item: ', Object.keys(item))
-    //                     console.log('acc: ', acc, typeof acc, 'cur: ', cur, typeof cur);
-    //                     return acc + data.swingData[item][cur]["0"]
-    //                 }, 0);
-    //             }
-    //             console.log('item: ', item);
-    //             // console.log(typeof item);
-    //             console.log('길이는: ', poseFeedbackLength);
-    //             console.log('토탈: ', posePointTotal);
-    //             if (isNaN(posePointTotal / poseFeedbackLength)) {
-    //                 return 0;
-    //             }
-    //             return posePointTotal / poseFeedbackLength;
-    //         });
-    
-    //         console.log("-------------------");
-    //         console.log(poseAverage);
-    //     }
-    // })
-
     return (
         <View style={styles.maincontainer}>
             <StatusBar 
@@ -142,7 +126,6 @@ const UserLatestSwingScreen = ({ navigation }) => {
                 
                 // style="light"
             />
-
 
             <View 
                 style ={{ 
@@ -192,7 +175,7 @@ const UserLatestSwingScreen = ({ navigation }) => {
                         textAlign:"left"
                     }}
                 >
-                    {data ? data.userName : "Text"}
+                    {data ? data.userName : "Test"}
                     님 환영합니다!
                 </Text>
                 {/* 프로필 버튼 */}
@@ -216,43 +199,14 @@ const UserLatestSwingScreen = ({ navigation }) => {
                     Awards
                 </Text>
 
-                <ScrollView // Awards View
-                    horizontal 
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.horizontalSCroll}
-                >
-                    {/* <Awardsbox />
-                    <Awardsbox />
-                    <Awardsbox />
-                    <Awardsbox />
-                    <Awardsbox />
-                    <Awardsbox /> */}
-                </ScrollView>
-
-                <Text style ={ styles.PerfectText}>
-                    당신의 Pro Shot
-                </Text>
-
-                <ScrollView //  당신의 perfect View
-                    horizontal
-                    showsHorizontalScrollIndicator ={false}
-                    style={styles.horizontalSCroll2}
-                >
-                    {/* <PerfectButton />
-                    <PerfectButton />
-                    <PerfectButton />
-                    <PerfectButton />
-                    <PerfectButton />
-                    <PerfectButton />
-                    <PerfectButton /> */}
-                </ScrollView>
-
-                <Text style ={ styles.Text}>
-                    개선사항
-                </Text>
+                {/* Awards */}
+                {data && <Awards token={token} badges={data.badges} />}
                 
                 {/* 데이터를 받으면 개선 사항 뿌려줌 */}
-                {data && <ImproveButtonList data={data.swingData} />}
+                {/* {data && <ProShotAndImprovement data={data.swingData} token={token} />} */}
+                {data && data.swingData.map((item, index) => (
+                    <ProShotAndImprovement key={index} data={item} token={token} />
+                ))}
     
             </ScrollView>
         </View>
@@ -285,11 +239,6 @@ const styles = StyleSheet.create({
         marginHorizontal:31,
         marginTop:30,
         textAlign:"left"
-    }, 
-    PerfectText :{
-        fontSize:22,
-        fontWeight:'bold',
-        marginHorizontal:32,
     }, 
     headerText:{
         color:'#FFF',

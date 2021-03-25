@@ -422,10 +422,10 @@ const RecordScreen = ({ navigation }) => {
                             // flex: 1,
                             justifyContent: 'center',
                             alignItems:"center",
-                            width: WIDTH * 0.4,
-                            height: WIDTH * 0.4,
+                            width: WIDTH * 0.3,
+                            height: WIDTH * 0.3,
                             // backgroundColor: 'black',
-                            borderRadius: WIDTH * 0.4 * 0.5,
+                            borderRadius: WIDTH * 0.3 * 0.5,
                             borderColor: '#73E681',
                             borderWidth: 5,
                             // backgroundColor: 'blue'
