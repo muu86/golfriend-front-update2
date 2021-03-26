@@ -11,10 +11,11 @@ import {
     TouchableOpacity, 
     Dimensions, 
     SafeAreaView,
+    Alert,
 } from "react-native";
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView } from "react-native-gesture-handler";
-import { FontAwesome } from 'react-native-vector-icons';
+import { FontAwesome, AntDesign } from 'react-native-vector-icons';
 import axios from 'axios';
 
 import AuthContext from '../../Context/AuthContext';
@@ -71,7 +72,19 @@ const UserLatestSwingScreen = ({ navigation }) => {
     const { signOut, getJWT } = useContext(AuthContext);
 
     const [token, setToken] = useState(null);
-    const [data, setData] = useState(null);
+
+    useEffect(() => {
+        (async () => {
+            const userToken = await getJWT();
+            setToken(userToken);
+        })();
+    }, []);
+
+    const [badges, setBadges] = useState(null);
+
+    const [data, setData] = useState([]);
+    // 몽고디비 배열 데이터에서 몇 번째 스윙 데이터를 가져오는지 정하는 index
+    const [index, setIndex] = useState(0);
     // 데이터 가져오는 useEffect
     useEffect(() => {
         
@@ -83,21 +96,22 @@ const UserLatestSwingScreen = ({ navigation }) => {
             //         Authorization: `Bearer ${userToken}`
             //     }
             // })
-            await axios.get(`http://${SERVER_IP}:80/past-swing`, {
+            await axios.get(`http://${SERVER_IP}:80/past-swing?index=${String(index)}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             })
             .then(res => {
-                // console.log(res);
-                // console.log(res.data);
+                console.log(res);
+                console.log(res.data);
                 // console.log(res);
                 console.log('--------------------------');
-                // console.log(res);
-                console.log(res.data.swingData);
-                console.log(res.data.swingData[0]);
-                console.log(res.data.swingData[0]["0"]);
-                // setData(res.data);
+                if (res.data === "no more data") {
+                    Alert.alert('데이터가 없습니다.');
+                    return;
+                } 
+                setData(data.concat([res.data]));
+                console.log(data);
             })
             // 토큰 유효기간이 지나 401 에러뜨면 자동 로그 아웃
             .catch(async error => {
@@ -108,16 +122,19 @@ const UserLatestSwingScreen = ({ navigation }) => {
                 console.log(error);
             });
         })();
-        
         console.log("최근 분석 useEffect 실행");
-    }, []);
 
-    // 서버에서 가져온 데이터 확인용 Effect
-    useEffect(() => {
-        if (data) {
-            console.log(typeof data.swingData);
-        }
-    }, [data]);
+        // 데이터를 가져왔으면 index를 1씩 증가시켜줌
+    }, [index]);
+
+    // // 서버에서 가져온 데이터 확인용 Effect
+    // useEffect(() => {
+    //     if (data) {
+    //         console.log(typeof data.swingData);
+    //     }
+    // }, [data]);
+
+
 
     return (
         <View style={styles.maincontainer}>
@@ -175,7 +192,7 @@ const UserLatestSwingScreen = ({ navigation }) => {
                         textAlign:"left"
                     }}
                 >
-                    {data ? data.userName : "Test"}
+                    {data[0] ? data.userName : "Test"}
                     님 환영합니다!
                 </Text>
                 {/* 프로필 버튼 */}
@@ -200,15 +217,25 @@ const UserLatestSwingScreen = ({ navigation }) => {
                 </Text>
 
                 {/* Awards */}
-                {data && <Awards token={token} badges={data.badges} />}
+                {/* 데이터가 빈 배열이 아니라면 */}
+                {/* {data[0] && <Awards token={token} badges={data.badges} />} */}
                 
                 {/* 데이터를 받으면 개선 사항 뿌려줌 */}
                 {/* {data && <ProShotAndImprovement data={data.swingData} token={token} />} */}
-                {data && data.swingData.map((item, index) => (
+                {data[0] && data.map((item, index) => (
                     <ProShotAndImprovement key={index} data={item} token={token} />
                 ))}
-    
+                
+                <TouchableOpacity
+                    onPress={() => {
+                        setIndex(index + 1)
+                        console.log(index);
+                    }}
+                >
+                    <AntDesign name="caretdown" size={30} color='black' />
+                </TouchableOpacity>
             </ScrollView>
+
         </View>
     )
 };
