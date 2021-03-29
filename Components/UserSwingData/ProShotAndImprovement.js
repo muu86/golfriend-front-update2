@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { Transition, TransitioningView } from 'react-native-reanimated';
 
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import {Ionicons, MaterialIcons, FontAwesome} from 'react-native-vector-icons';
 
 import PerfectButton from './PerfectButton';
 
@@ -208,7 +208,7 @@ const ProShotAndImprovement = ({ data, token }) => {
 
     const proShot = poseAverage
                         .map((item, index) => {
-                            if (item >= 1.3) {
+                            if (item >= 1.5) {
                                 return String(index);
                             } else {
                                 return;
@@ -221,7 +221,7 @@ const ProShotAndImprovement = ({ data, token }) => {
 
     const badShot = poseAverage
                         .map((item, index) => {
-                            if (item < 1) {
+                            if (item < 1.5) {
                                 return String(index);
                             }
                         })
@@ -234,20 +234,25 @@ const ProShotAndImprovement = ({ data, token }) => {
         <View
             style={{
                 flex: 1,
+                marginVertical: 20,
             }}
         >
+            <View style={{ height: 3, marginVertical: 8, backgroundColor: 'lightgreen'}}/>
             <Text
                 style={{
-                    fontSize:25,
+                    fontSize: 15,
                     fontWeight:'bold',
                     marginHorizontal:31,
-                    marginTop:30,
-                    textAlign:"left"
+                    marginTop: 0,
+                    textAlign:"right"
                 }}
             >{data.date}</Text>
-            <Text style ={ styles.ProShotHeaderText}>
-                당신의 Pro Shot
-            </Text>
+            <View style={{ flexDirection: 'row', marginLeft: 20, alignItems: 'center' }}>
+                <MaterialIcons name="mood" size={20} color="black" />
+                <Text style ={ styles.Text}>
+                        당신의 프로샷
+                </Text>
+            </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator ={false}
@@ -257,9 +262,12 @@ const ProShotAndImprovement = ({ data, token }) => {
                     <PerfectButton key={item} data={item} />
                 ))}
             </ScrollView>
-            <Text style ={ styles.Text}>
-                    개선사항
-            </Text>
+            <View style={{ flexDirection: 'row', marginLeft: 20, alignItems: 'center' }}>
+                <MaterialIcons name="mood-bad" size={20} color="black" />
+                <Text style ={ styles.Text}>
+                        개선사항
+                </Text>
+            </View>
             {badShot && badShot.map((item, index) => (
                 <Improvement key={index} data={data} index={item} imagePath={imagePath} token={token} />
             ))}                
@@ -318,9 +326,10 @@ const styles = StyleSheet.create({
     Text :{
         fontSize:25,
         fontWeight:'bold',
-        marginHorizontal:31,
+        marginHorizontal: 10,
         // marginTop:30,
-        textAlign:"left"
+        textAlign:"left",
+        // textAlignVertical: 'center'
     }, 
     IconStyle:{
         marginHorizontal:10,

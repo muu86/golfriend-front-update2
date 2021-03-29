@@ -73,6 +73,9 @@ export default function App() {
             'Authorization': `Bearer ${userToken}`,
           }
         })
+        .then(res => {
+          dispatch({ type: 'SIGN_IN', token: userToken });
+        })
         .catch(error => {
           console.log('토큰 유효성 http status: ', error.response.status);
           if (error.response.status === 401) {

@@ -4,7 +4,7 @@ import { View, StyleSheet, Text, Animated } from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const POSE_NAME = ["address", "take away", "back swing", "top", "down swing", "impact", "release", "follow through"];
+const POSE_NAME = ["Address", "Take Away", "Back Swing", "Top", "Down Swing", "Impact", "Release", "Finish"];
 
 export default class PerfectButton extends React.Component{
     render(){
@@ -22,7 +22,7 @@ export default class PerfectButton extends React.Component{
                         marginLeft:7, 
                         marginTop:8,
                         textAlign:"center",
-                        fontSize:16,
+                        fontSize:10,
                         color:"#0066FF",
                         fontWeight:'bold'}}>
 
