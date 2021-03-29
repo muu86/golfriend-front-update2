@@ -5,8 +5,6 @@ import RecordScreen from '../Camera/RecordScreen';
 import VideoScreen from '../Camera/VideoScreen';
 import FeedbackScreen from '../Camera/FeedbackScreen';
 
-import { Entypo } from '@expo/vector-icons'; 
-
 const CameraStack = createStackNavigator();
 
 const CameraStackNavigator = () => {
@@ -30,11 +28,6 @@ const CameraStackNavigator = () => {
                     headerStyle: {
                         height: 70,
                     },
-                    // headerRight: () => (
-                    //     <View style={{ flexDirection: 'row' }}>
-                    //         <Entypo name="slideshare" size={24} color="black" />
-                    //     </View>
-                    // )
                 }}
             />
         </CameraStack.Navigator>

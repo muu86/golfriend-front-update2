@@ -2,13 +2,20 @@ import * as React from 'react';
 import {
     StatusBar,
     StyleSheet,
+    Alert,
     View,
+    Text,
+    TouchableOpacity,
+    ScrollView,
     Image,
     Animated,
     Dimensions,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, AntDesign, Entypo } from '@expo/vector-icons';
+import axios from 'axios';
+import AuthContext from '../../Context/AuthContext';
 
+const SERVER_IP = "121.138.83.4";
 const { width, height } = Dimensions.get('window');
 
 const ITEM_SIZE = width * 0.75;
@@ -50,7 +57,7 @@ const Info = ({ data, inputRange, scrollX }) => {
                     }));
     
     return (
-        <View style={{ marginTop: 10, }}>
+        <ScrollView style={{ marginTop: 10, }}>
             {good && <Animated.FlatList
                 data={good}
                 keyExtractor={item => item.key.toString()}
@@ -59,14 +66,15 @@ const Info = ({ data, inputRange, scrollX }) => {
                     { useNativeDriver: false }
                 )}
                 renderItem={({ item }) => (
-                    <Animated.Text
+                    <Animated.View
                         style={{
                             opacity,
+                            flexDirection: 'row',
                         }}
                     >
                         <Ionicons name="checkmark-circle" size={32} color="#73E681" />
-                        {item.info}
-                    </Animated.Text>
+                        <Text>{item.info}</Text>
+                    </Animated.View>
                 )}
             />}
             {normal && <Animated.FlatList
@@ -77,14 +85,15 @@ const Info = ({ data, inputRange, scrollX }) => {
                     { useNativeDriver: false }
                 )}
                 renderItem={({ item }) => (
-                    <Animated.Text
+                    <Animated.View
                         style={{
                             opacity,
+                            flexDirection: 'row',
                         }}
                     >
                         <Ionicons name="caret-up-circle" size={32} color="#FFF500" />
-                        {item.info}
-                    </Animated.Text>
+                        <Text>{item.info}</Text>
+                    </Animated.View>
                 )}
             />}
             {bad && <Animated.FlatList
@@ -95,17 +104,18 @@ const Info = ({ data, inputRange, scrollX }) => {
                     { useNativeDriver: false }
                 )}
                 renderItem={({ item }) => (
-                    <Animated.Text
+                    <Animated.View
                         style={{
                             opacity,
+                            flexDirection: 'row',
                         }}
                     >
                         <Ionicons name="close-circle" size={32} color="#FF0000" />
-                        {item.info}
-                    </Animated.Text>
+                        <Text>{item.info}</Text>
+                    </Animated.View>
                 )}
             />}
-        </View>
+        </ScrollView>
     )
 }
 
@@ -164,7 +174,7 @@ const Indicator = ({ data, scrollX }) => {
     )
 }
 
-const ImageList = ({ data, scrollX }) => {
+const ImageList = ({ data, scrollX, token }) => {
 
     data = [{ key: 'empty-left' }, ...data, { key: 'empty-right' }];
 
@@ -223,7 +233,12 @@ const ImageList = ({ data, scrollX }) => {
                             >
                                 <Image
                                     style={styles.poseImage}
-                                    source={{ uri: item.image }}
+                                    source={{ 
+                                        uri: `http://${SERVER_IP}:80/get-image/${item.image}_${index}`,
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`
+                                        }
+                                    }}
                                 />
                             </Animated.View>
                             <Animated.Text
@@ -246,15 +261,88 @@ const ImageList = ({ data, scrollX }) => {
     )
 }
 
-const FeedbackScreen = ({ route }) => {
-    const data = route.params.data;
+const FeedbackScreen = ({ navigation, route }) => {
+    const { data, token } = route.params;
     // const data = TEST_DATA;
     const scrollX = React.useRef(new Animated.Value(0)).current;
+
+    React.useLayoutEffect(() => {
+        navigation.setOptions({
+            headerRight: () => (
+                // 스택 헤더 공유 버튼
+                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    {/* 다른 앱에 공유 버튼 */}
+                    <TouchableOpacity 
+                        style={{ flexDirection: 'column', alignItems: 'center', marginHorizontal: 10 }}
+                    >
+                        <AntDesign name="sharealt" size={24} color="black" />
+                        <Text style={{ fontSize: 8 }}>친구에게 공유</Text>
+                    </TouchableOpacity>
+                    {/* 소셜에 동영상 업로드 버튼 */}
+                    <TouchableOpacity 
+                        style={{ flexDirection: 'column', alignItems: 'center', marginHorizontal: 10 }}
+                        onPress={() => {
+                            Alert.alert(
+                                "소셜 업로드",
+                                "내 스윙을 모든 골프렌드에게 공유합니다",
+                                [
+                                    {
+                                        text: "취소",
+                                        style: 'cancel'
+                                    },
+                                    {
+                                        text: "확인",
+                                        onPress: async () => {
+                                            console.log(data[0].image)
+                                            await axios.post(
+                                                `http://${SERVER_IP}:80/post-social-video`,
+                                                {
+                                                    'video': data[0].image,
+                                                },
+                                                {
+                                                    headers: {
+                                                        'Authorization': `Bearer ${token}`
+                                                    }
+                                                }
+                                            )
+                                            .then(res => console.log(res))
+                                            .catch(error => {
+                                                if (error.response) {
+                                                    // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.
+                                                    console.log(error.response.data);
+                                                    console.log(error.response.status);
+                                                    console.log(error.response.headers);
+                                                  }
+                                                  else if (error.request) {
+                                                    // 요청이 이루어 졌으나 응답을 받지 못했습니다.
+                                                    // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
+                                                    // Node.js의 http.ClientRequest 인스턴스입니다.
+                                                    console.log(error.request);
+                                                  }
+                                                  else {
+                                                    // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
+                                                    console.log('Error', error.message);
+                                                  }
+                                                  console.log(error.config);
+                                            });
+                                        }
+                                    }
+                                ]
+                            )
+                        }}    
+                    >
+                        <Entypo name="slideshare" size={24} color="black" />
+                        <Text style={{ fontSize: 8 }}>소셜에 업로드</Text>
+                    </TouchableOpacity>
+                </View>
+            )
+        })
+    })
 
     return (
         <View style={styles.container}>
             <StatusBar hidden={true} />
-            <ImageList data={data} scrollX={scrollX} />
+            <ImageList data={data} scrollX={scrollX} token={token} />
             {/* <InfoList data={data} scrollX={scrollX} /> */}
             <Indicator data={data} scrollX={scrollX} />
         </View>

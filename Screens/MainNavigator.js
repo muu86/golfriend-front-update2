@@ -9,10 +9,10 @@ import  {
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import UserLatestSwingScreen from '../Screens/Main/UserLatestSwingScreen';
 import CameraStackNavigator from './Main/CameraStackNavigator';
+import UserSwingDataScreen from '../Screens/Main/UserSwingDataScreen';
 import CameraButton from '../Components/Buttons/CameraButton';
-import UserSwingDataScreen from './Main/UserSwingDataScreen';
+import SocialScreen from './Main/SocialScreen';
 // import VideoRecord from '../Screens/VideoRecordScreen';
 
 const MainStack = createBottomTabNavigator();
@@ -45,7 +45,7 @@ const MainNavigator = () => {
           }
         }} 
     >
-      <MainStack.Screen name = "UserLatestSwing" component ={UserLatestSwingScreen} 
+      <MainStack.Screen name = "UserSwingData" component ={UserSwingDataScreen} 
         options={{ 
           title: "최근 분석",
           tabBarIcon: ({ focused, color }) => {
@@ -73,7 +73,7 @@ const MainNavigator = () => {
         }}
       />
       
-      <MainStack.Screen name = "UserSwingData" component ={UserSwingDataScreen} 
+      <MainStack.Screen name="Social" component={SocialScreen} 
         options={{ 
           title: "소셜",
           tabBarIcon: ({ focused, color }) => {

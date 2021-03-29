@@ -159,32 +159,33 @@ const RecordScreen = ({ navigation }) => {
         const imagePath = result['filePath'];
         console.log('이미지 이름: ', imagePath);
 
-        await FileSystem.makeDirectoryAsync(
-            FileSystem.documentDirectory + imagePath
-        );
+        // await FileSystem.makeDirectoryAsync(
+        //     FileSystem.documentDirectory + imagePath
+        // );
         
         // indexes = [0, 1, 2, 3, 4, 5, 6, 7]
         const indexes = [...Array(8).keys()]; 
-        let images = indexes.map(index => (
-            FileSystem.downloadAsync(
-                `http://${SERVER_IP}:80/images/${imagePath}/${index}`,
-                FileSystem.documentDirectory + imagePath + `/${index}.png`
-            )
-        ));
-        images = await Promise.all(images);
+        // let images = indexes.map(index => (
+        //     FileSystem.downloadAsync(
+        //         `http://${SERVER_IP}:80/images/${imagePath}/${index}`,
+        //         FileSystem.documentDirectory + imagePath + `/${index}.png`
+        //     )
+        // ));
+        // images = await Promise.all(images);
 
         const data = indexes
                         .map(key => ({
                             key: POSE_NAME[key],
                             feedback: result[key],
-                            image: images[key].uri,
+                            image: String(imagePath),
                         }));
         
-        console.log(images);
+        // console.log(images);
         console.log('Feedback 페이지로 이동');
 
         navigation.navigate('Feedback', {
             data: data,
+            token: userToken,
         })
     }
 
@@ -279,7 +280,7 @@ const RecordScreen = ({ navigation }) => {
             {/* 뒤로가기 */}
             <TouchableOpacity 
                 style={{ flex: 0.5, justifyContent: 'flex-end' }}
-                onPress={() => navigation.navigate('UserLatestSwing')}
+                onPress={() => navigation.navigate('UserSwingData')}
             >
                 <Icon name="close-outline" size={55} color="black" />
             </TouchableOpacity>
