@@ -11,10 +11,11 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
-const SERVER_IP = "121.138.83.4";
+import { SERVER_IP } from '../../constants';
 const { width, height } = Dimensions.get('window');
 
-const Awards = ({ token, badges }) => {
+const Awards = ({ badges, token }) => {
+    console.log('awards 페이지 시작')
     // const [data, setData] = useState(null); 
 
     // useEffect(() => {
@@ -55,7 +56,7 @@ const Awards = ({ token, badges }) => {
                                 headers: {
                                     'Authorization': `Bearer ${token}`
                                 },
-                                // cache: 'reload'
+                                cache: 'reload'
                             }}
                         />
                         <Text style={{ fontSize: 10, fontWeight: 'bold' }}>{item.replace('_', ' ').toUpperCase()}</Text>

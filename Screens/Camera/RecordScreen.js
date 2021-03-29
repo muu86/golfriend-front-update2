@@ -9,6 +9,7 @@ import {
     Button,
     Alert,
     Modal,
+    ActivityIndicator,
 } from 'react-native';
 import { Camera } from 'expo-camera';
 import { Audio, Video } from 'expo-av';
@@ -18,14 +19,10 @@ import AuthContext from '../../Context/AuthContext';
 
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import Animated from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/Ionicons';
-import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import { Entypo, Ionicons, FontAwesome5, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons'; 
 // import * as MediaLibrary from 'expo-media-library';
 
-const SERVER_IP = "121.138.83.4";
-const POSE_NAME = ["address", "take away", "back swing", "top", "down swing", "impact", "release", "follow through"];
+import { SERVER_IP, POSE_NAME } from '../../constants';
 
 const RecordScreen = ({ navigation }) => {
 
@@ -42,6 +39,7 @@ const RecordScreen = ({ navigation }) => {
 
     const [videoUri, setVideoUri] = useState(null);
     const [recording, setRecording] = useState(false);
+    // const [loading, setLoading] = useState(false);
     const [modalup, setModalup] = useState(false);
 
     const { getJWT } = useContext(AuthContext);
@@ -234,7 +232,7 @@ const RecordScreen = ({ navigation }) => {
                             marginHorizontal: 20,
                         }}
                     >
-                        <MaterialCommunityIcons name='face' size={30} color="black" />
+                        <MaterialCommunityIcons name='face' size={24} color="black" />
                         <Text 
                             style={styles.buttonText}
                         >
@@ -249,7 +247,7 @@ const RecordScreen = ({ navigation }) => {
                             marginHorizontal: 20,
                         }}
                     >
-                        <MaterialCommunityIcons name='face-profile' size={30} color="black" />
+                        <MaterialCommunityIcons name='face-profile' size={24} color="black" />
                         <Text style={styles.buttonText}>
                             측면
                         </Text>
@@ -271,7 +269,8 @@ const RecordScreen = ({ navigation }) => {
                     }}
                     onPress={pickVideo}
                 >
-                    <FontAwesome5 name ='photo-video' size ={30} color ={'black'}/>
+                    {/* <FontAwesome5 name ='photo-video' size ={30} color ={'black'}/> */}
+                    <Entypo name="folder-video" size={24} color="black" />
                     <Text
                         style={{ fontSize: 10, }}
                     >갤러리</Text>
@@ -282,7 +281,7 @@ const RecordScreen = ({ navigation }) => {
                 style={{ flex: 0.5, justifyContent: 'flex-end' }}
                 onPress={() => navigation.navigate('UserSwingData')}
             >
-                <Icon name="close-outline" size={55} color="black" />
+                <Ionicons name="close-outline" size={55} color="black" />
             </TouchableOpacity>
         </View> 
        {/* 카메라 동여상 촬영 종료시 작동되는 모달 페이지 시작점*/}
@@ -399,7 +398,7 @@ const RecordScreen = ({ navigation }) => {
                     ? Camera.Constants.Type.front
                     : Camera.Constants.Type.back
                 );}}>
-                <Icon name = 'ios-camera-reverse-outline' size={30} style={{color:"black"}} />
+                <Ionicons name = 'ios-camera-reverse-outline' size={30} style={{color:"black"}} />
                 <Text style={{ fontSize: 10, }}>카메라 전환</Text>
             </TouchableOpacity>
         
@@ -431,24 +430,17 @@ const RecordScreen = ({ navigation }) => {
                             borderWidth: 5,
                             // backgroundColor: 'blue'
                         }}
-                        onPress={!videoUri ? 
-                                    (!recording ? record : stopRecord)
-                                    : 
-                                    (sendVideo)} >
+                        onPress={!videoUri ? (!recording ? record : stopRecord) : (sendVideo) }
+                    >
                     
                         {!videoUri ? 
-                            // <Animated.View style ={ recording ? styles.startRecordingButton : styles.stopRecordingButton }>
-                            //     {/* <Text>녹화</Text> */}
-                            // </Animated.View>
                             !recording ? (
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                                     <FontAwesome5 name="video" size={70} color="#73E681" />
-                                    {/* <Text>촬영</Text> */}
                                 </View>   
                             ) : (
                                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                                     <FontAwesome5 name="video-slash" size={70} color="#73E681" />
-                                    {/* <Text>정지</Text> */}
                                 </View>  
                             ) : (
                             <View style={{ justifyContent: 'center', alignItems: 'center' }}>
@@ -456,6 +448,26 @@ const RecordScreen = ({ navigation }) => {
                                 <Text>분석</Text>
                             </View>
                         )}
+                        {/* {   !loading  ?
+                            !videoUri ? 
+                            !recording ? (
+                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                    <FontAwesome5 name="video" size={50} color="#73E681" />
+                                </View>   
+                            ) : (
+                                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                    <FontAwesome5 name="video-slash" size={50} color="#73E681" />
+                                </View>  
+                        ) : (
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                                <FontAwesome name="cloud-upload" size={50} color="#73E681" />
+                                <Text>분석</Text>
+                            </View>
+                        ) : (
+                            <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+                               <ActivityIndicator  color ="#73E681" size ="large" />
+                            </View>
+                        )} */}
                         
                     </TouchableOpacity>
             {/* </View> */}
@@ -505,6 +517,7 @@ const styles = StyleSheet.create({
     // },
     buttonText:{
         textAlign:'center',
+        fontSize: 10,
         // color:"#73E681"
         color: 'black',
     },

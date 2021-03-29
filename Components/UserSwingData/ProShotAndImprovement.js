@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { Component, useState, useContext } from 'react';
+import React, { useState, useContext, useRef } from 'react';
 import { 
     Animated, 
     Button, 
@@ -15,164 +15,183 @@ import { Transition, TransitioningView } from 'react-native-reanimated';
 import {Ionicons, MaterialIcons, FontAwesome} from 'react-native-vector-icons';
 
 import PerfectButton from './PerfectButton';
+import { SERVER_IP, POSE_NAME } from '../../constants';
 
-const POSE_NAME = ["address", "take away", "back swing", "top", "down swing", "impact", "release", "follow through"];
-
-class Improvement extends Component {
-
-
-    constructor (){
-        super();
-        this.state={
-            animationValue :  new Animated.Value(100),
-            viewState : true
-        }
-    }
+const Improvement = ({ data, index, imagePath, token }) => {
+    // constructor (){
+    //     super();
+    //     this.state={
+    //         animationValue :  new Animated.Value(100),
+    //         viewState : true,
+    //         // textCounts: ,
+    //     }
+    // }
+    const animationValue = useRef(new Animated.Value(100)).current;
+    const [viewState, setViewState] = useState(true);
     
-    toggleAnimation =() =>{
+    // toggleAnimation =() =>{
         
-        if(this.state.viewState ==  true ){
-            Animated.timing(this.state.animationValue,{
-                toValue: 300,
-                timing: 300,
+    //     if(this.state.viewState ==  true ){
+    //         Animated.timing(this.state.animationValue,{
+    //             toValue: 100 + (this.state.textCounts * 50),
+    //             timing: 300,
+    //             useNativeDriver:false
+    //         }).start(()=>{
+    //             this.setState({viewState : false })
+    //         });
+    //     }
+    //     else{
+    //         Animated.timing(this.state.animationValue, {
+    //           toValue : 100,
+    //           timing : 300,
+    //           useNativeDriver: false,
+    //         }).start(this.setState({viewState: true})
+    //         );
+    //       }
+    // }
+    console.log(data)
+    console.log(index)
+    const detailFeedback = Object.keys(data[index])
+        .filter((item, idx) => (
+            data[index][item]["0"] <= 1
+        ))
+        .map((item, idx) => (
+            data[index][item]["2"]
+        ))
+    const textCounts = detailFeedback.length;
+
+    const toggleAnimation = () => {
+        if(viewState ==  true ){
+            Animated.timing(animationValue, {
+                toValue: 100 + (textCounts * 70),
+                timing: 50,
                 useNativeDriver:false
             }).start(()=>{
-                this.setState({viewState : false })
+                setViewState(false);
             });
         }
         else{
-            Animated.timing(this.state.animationValue, {
+            Animated.timing(animationValue, {
               toValue : 100,
-              timing : 300,
+              timing : 50,
               useNativeDriver: false,
-            }).start(this.setState({viewState: true})
-            );
+            }).start(() => setViewState(true))
           }
     }
 
+    const animatedStyle ={
+        height :  animationValue,
+    }
 
+    return (
+        <View style = {styles.container}>
+            
+                
+                <Animated.View style ={[styles.Awardsbox, animatedStyle]}>
+    
+                    {/* <View style={styles.Imagebox}> */}
+                    <View style={{ 
+                        flex: 1, 
+                        // backgroundColor: 'red' 
+                    }}>
+                    {/* 버튼 누르기 전 row 로 정렬된 View */}
+                        <View 
+                            style={{ 
+                                flex: 1, 
+                                flexDirection: 'row', 
+                                alignItems: 'center', 
+                                justifyContent: 'space-between',
+                                // backgroundColor: 'blue',
+                            }}
+                        >
+                            <View style={{  
+                                // backgroundColor: 'red',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                }}>
+                                <Image
+                                    style={{ 
+                                        flex: 1,
+                                        resizeMode: 'cover',
+                                        width:70,
+                                        maxHeight:100,
+                                        borderRadius:20,
+                                        backgroundColor:"#FFF",
+                                        position:'relative',
+                                        // marginLeft:10,
+                                        // marginTop:10,
+                                        shadowColor:"#000",
+                                        shadowOffset:{
+                                            width:0,
+                                            height:2,
+                                        },
+                                    }}
+                                    source={{
+                                        uri: `http://${SERVER_IP}:80/get-image/${String(imagePath)}_${String(index)}`,
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`,
+                                        },
+                                    }}
+                                />
+                            </View>
 
-    render(){
-
-        const animatedStyle ={
-            height :  this.state.animationValue,
-        }
-
-        const { viewState } = this.state;
-
-        const { data } = this.props;
-        const { index } = this.props;
-        const { imagePath } = this.props;
-        console.log('imagePath의 타입:', typeof imagePath)
-        const { token } = this.props;
-
-        let button = (
-            <TouchableOpacity
-            onPress={this.toggleAnimation}>
-            <FontAwesome name ={'chevron-right'} size ={16} style={styles.IconStyle} color ={'#90ee90'}/>
-            </TouchableOpacity>
-        );
-
-        if(!viewState){
-            button =(
-                <TouchableOpacity
-                onPress={this.toggleAnimation}>
-                <FontAwesome name ={'chevron-down'} size ={30} style={styles.IconStyle} color ={'#90ee90'} />   
-                </TouchableOpacity>
-            );
-        }
-
-        return (
-            <View style = {styles.container}>
-               
-                    
-                    <Animated.View style ={[styles.Awardsbox, animatedStyle]}>
-        
-                        {/* <View style={styles.Imagebox}> */}
-                        <View style={{ 
-                            flex: 1, 
-                            // backgroundColor: 'red' 
-                        }}>
-                        {/* 버튼 누르기 전 row 로 정렬된 View */}
-                            <View 
-                                style={{ 
-                                    flex: 1, 
-                                    flexDirection: 'row', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'space-between',
-                                    // backgroundColor: 'blue',
+                        {/* </View> */}
+                        <View style={{ flexDirection: 'row', justifyContent: 'flex-start', flex: 0.7}}>
+                            <View style={{ 
+                                flexDirection: 'column', 
+                                // alignItems: 'center' 
                                 }}
                             >
-                                <View style={{  
-                                    // backgroundColor: 'blue'
-                                    }}>
-                                    <Image
-                                        style={{ 
-                                            flex: 1,
-                                            resizeMode: 'cover',
-                                            width:63,
-                                            maxHeight:70,
-                                            borderRadius:20,
-                                            backgroundColor:"#FFF",
-                                            position:'relative',
-                                            marginLeft:10,
-                                            marginTop:10,
-                                            shadowColor:"#000",
-                                            shadowOffset:{
-                                                width:0,
-                                                height:2,
-                                            },
-                                        }}
-                                        source={{
-                                            uri: `http://121.138.83.4:80/get-image/${String(imagePath)}_${String(index)}`,
-                                            headers: {
-                                                'Authorization': `Bearer ${token}`,
-                                            },
-                                        }}
-                                    />
-                                </View>
-
-                            {/* </View> */}
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
-                                <View style={{ 
-                                    flexDirection: 'column', 
-                                    // alignItems: 'center' 
-                                    }}>
-                                    
-                                        <Text style ={{
-                                            fontSize: 25,
-                                            textAlign: 'left'
-                                            // fontWeight:"bold",
-                                            // marginVertical:10,
-                                            // marginHorizontal:100,
-                                            // position:"absolute"
-                                        }}> 
-                                            {POSE_NAME[index].charAt(0).toUpperCase() + POSE_NAME[index].slice(1)}
-                                        </Text>
-                                        <Text>
-                                            김민제
-                                        </Text>
-                                    </View>
-                                </View>
-
-
-                                { button }
-                            {/* <TouchableOpacity onPress ={this.toggleAnimation}>
-                                <FontAwesome name= 'right' size={50} style={styles.IconStyle} />
-                            </TouchableOpacity>   */}
+                                
+                                    <Text style ={{
+                                        fontSize: 25,
+                                        textAlign: 'left'
+                                        // fontWeight:"bold",
+                                        // marginVertical:10,
+                                        // marginHorizontal:100,
+                                        // position:"absolute"
+                                    }}> 
+                                        {POSE_NAME[index].charAt(0).toUpperCase() + POSE_NAME[index].slice(1)}
+                                    </Text>
+                                    {/* <Text>
+                                        김민제
+                                    </Text> */}
                             </View>
-                            {!viewState && (
-                                <View style={{ flex: 1,}}>
-                                    <Text>Hi</Text>
-                                </View>
-                            )}
                         </View>
-                    </Animated.View>
-                       
-                   
-           </View>
-        );
-    }
+                        <TouchableOpacity
+                            onPress={toggleAnimation}>
+                            <FontAwesome name ={viewState ? 'chevron-right' : 'chevron-down'} size ={16} style={styles.IconStyle} color ={'#90ee90'} />   
+                        </TouchableOpacity>
+                        {/* <TouchableOpacity onPress ={this.toggleAnimation}>
+                            <FontAwesome name= 'right' size={50} style={styles.IconStyle} />
+                        </TouchableOpacity>   */}
+                        </View>
+                        {!viewState && (
+                            detailFeedback
+                                .map((item, idx) => (
+                                    <View 
+                                        key={item}
+                                        style={{
+                                            // alignItems: 'center',
+                                            width: '80%',
+                                            alignSelf: 'center'
+                                        }}
+                                    >   
+                                        <View
+                                            style={{ flexDirection: 'row' }}
+                                        >
+                                            <Ionicons name="close-circle" size={32} color="#FF0000" />
+                                            <Text style={{ marginVertical: 10 }}>{item}</Text>
+                                        </View>
+                                    </View>
+                                ))
+                        )}
+                    </View>
+                </Animated.View>
+                    
+                
+        </View>
+    );
 }
 
 const ProShotAndImprovement = ({ data, token }) => {
@@ -336,9 +355,9 @@ const styles = StyleSheet.create({
         marginVertical:10
     },
     horizontalSCroll2:{
-        height:175,
-        width:"100%",
-        marginHorizontal:20,
+        // height:175,
+        // width:"100%",
+        // marginHorizontal:20,
         marginTop:30,
     },
     ProShotHeaderText :{

@@ -12,7 +12,7 @@ import SignInNavigator from './Screens/SignInNavigator';
 import SplashScreen from './Screens/SplashScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 
-const SERVER_IP = "121.138.83.4";
+import { SERVER_IP } from './constants';
 
 // 토큰 관리할 리듀서
 const tokenReducer = (prevState, action) => {
@@ -74,7 +74,10 @@ export default function App() {
           }
         })
         .then(res => {
-          dispatch({ type: 'SIGN_IN', token: userToken });
+          if (res.data) {
+            dispatch({ type: 'RESTORE_TOKEN', token: userToken });
+            return;
+          }
         })
         .catch(error => {
           console.log('토큰 유효성 http status: ', error.response.status);
@@ -106,7 +109,6 @@ export default function App() {
         await SecureStore.setItemAsync('userToken', result.data);
         dispatch({ type: 'SIGN_IN', token: result.data });
         console.log('토큰이 저장되었습니다.');
-
       },
       signOut: async () => {
         await SecureStore.deleteItemAsync('userToken');
@@ -127,9 +129,8 @@ export default function App() {
         dispatch({ type: 'SIGN_IN', token: result.data });
         console.log('토큰이 저장되었습니다.');
       },
-      getJWT: async () => {
-        const result = await SecureStore.getItemAsync('userToken');
-        return result;
+      getJWT: () => {
+        return state.userToken;
       },
       // checkIdentity: async () => {
       //   const email = 
@@ -145,7 +146,7 @@ export default function App() {
   return (
     <AuthContext.Provider value={authContext}>
       <NavigationContainer>    
-        {state.userToken == null ? (
+        {!state.userToken ? (
           <SignInNavigator />
           ) : (
           <MainNavigator />

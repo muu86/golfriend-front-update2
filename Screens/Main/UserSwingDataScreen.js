@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView } from "react-native-gesture-handler";
-import { Ionicons, FontAwesome, AntDesign } from 'react-native-vector-icons';
+import { Ionicons, FontAwesome, AntDesign, Feather } from 'react-native-vector-icons';
 import axios from 'axios';
 
 import AuthContext from '../../Context/AuthContext';
@@ -23,7 +23,7 @@ import Awards from '../../Components/UserSwingData/Awards';
 import ProShotAndImprovement from '../../Components/UserSwingData/ProShotAndImprovement';
 import PastFeedback from '../../Components/UserSwingData/PastFeedBack';
 
-const SERVER_IP = "121.138.83.4";
+import { SERVER_IP } from '../../constants';
 
 const ProfileModal = ({ modalVisible, setModalVisible }) => {
     const { signOut } = useContext(AuthContext);
@@ -72,19 +72,19 @@ const UserSwingDataScreen = ({ navigation }) => {
     const { signOut, getJWT } = useContext(AuthContext);
 
     const [token, setToken] = useState(null);
-
     useEffect(() => {
-        (async () => {
-            const userToken = await getJWT();
-            setToken(userToken);
-        })();
+        let userToken = getJWT();
+        setToken(userToken);
+        console.log("token useEffect!!!")
+        console.log(token);
     }, []);
 
     const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
         (async () => {
-            console.log('badges 가져오기')
-            await axios.get(`http://${SERVER_IP}:80/get-my-badges`, {
+            console.log('badges 가져오기');
+            console.log(token);
+            await axios.get(`http://${SERVER_IP}:80/get-user-info`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -93,6 +93,7 @@ const UserSwingDataScreen = ({ navigation }) => {
                 console.log('badges 가져오기 성공!')
                 setUserInfo(res.data);
                 // console.log(badges);
+                console.log('userInfo', userInfo);
             })
             .catch(error => {
                 if (error.response) {
@@ -100,18 +101,18 @@ const UserSwingDataScreen = ({ navigation }) => {
                     console.log(error.response.data);
                     console.log(error.response.status);
                     console.log(error.response.headers);
-                  }
-                  else if (error.request) {
-                    // 요청이 이루어 졌으나 응답을 받지 못했습니다.
-                    // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
-                    // Node.js의 http.ClientRequest 인스턴스입니다.
-                    console.log(error.request);
-                  }
-                  else {
-                    // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
-                    console.log('Error', error.message);
-                  }
-                  console.log(error.config);
+                }
+                else if (error.request) {
+                // 요청이 이루어 졌으나 응답을 받지 못했습니다.
+                // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
+                // Node.js의 http.ClientRequest 인스턴스입니다.
+                console.log(error.request);
+                }
+                else {
+                // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
+                console.log('Error', error.message);
+                }
+                console.log(error.config);
             });
         })();
     }, [token])
@@ -123,8 +124,8 @@ const UserSwingDataScreen = ({ navigation }) => {
     useEffect(() => {
         
         (async () => {
-            const userToken = await getJWT();
-            setToken(userToken);
+            // const userToken = await getJWT();
+            // setToken(userToken);
             // await axios.get(`http://${SERVER_IP}:80/past-swing`, {
             //     headers: {
             //         Authorization: `Bearer ${userToken}`
@@ -142,6 +143,9 @@ const UserSwingDataScreen = ({ navigation }) => {
                 console.log('--------------------------');
                 if (res.data === "no more data") {
                     Alert.alert('데이터가 없습니다.');
+                    if (index >= 1) {
+                        setIndex(index - 1);
+                    }
                     return;
                 } 
                 setData(data.concat([res.data]));
@@ -260,7 +264,6 @@ const UserSwingDataScreen = ({ navigation }) => {
                     </Text>
                 </View>
 
-                {/* 데이터가 빈 배열이 아니라면 */}
                 {userInfo && token && <Awards token={token} badges={userInfo.badges} />}
                 
                 {/* 데이터를 받으면 개선 사항 뿌려줌 */}
@@ -269,13 +272,17 @@ const UserSwingDataScreen = ({ navigation }) => {
                     <ProShotAndImprovement key={index} data={item} token={token} />
                 ))}
                 
+                {/* 더 불러오기 버튼 */}
                 <TouchableOpacity
+                    style={{ flexDirection: 'row', justifyContent:'space-around', height: 30, backgroundColor: 'gainsboro', alignItems: 'center'}}
                     onPress={() => {
                         setIndex(index + 1)
                         console.log(index);
                     }}
-                >
-                    <AntDesign name="caretdown" size={30} color='black' />
+                >   
+                    <Text>더 불러오기</Text>
+                    <Feather name="arrow-down" size={15} color="white" />
+                    <Feather name="arrow-down" size={15} color="white" />
                 </TouchableOpacity>
             </ScrollView>
 

@@ -15,7 +15,7 @@ import { Ionicons, AntDesign, Entypo } from '@expo/vector-icons';
 import axios from 'axios';
 import AuthContext from '../../Context/AuthContext';
 
-const SERVER_IP = "121.138.83.4";
+import { SERVER_IP } from '../../constants';
 const { width, height } = Dimensions.get('window');
 
 const ITEM_SIZE = width * 0.75;
@@ -73,7 +73,7 @@ const Info = ({ data, inputRange, scrollX }) => {
                         }}
                     >
                         <Ionicons name="checkmark-circle" size={32} color="#73E681" />
-                        <Text>{item.info}</Text>
+                        <Text style={{ marginRight: 30 }}>{item.info}</Text>
                     </Animated.View>
                 )}
             />}
@@ -88,11 +88,12 @@ const Info = ({ data, inputRange, scrollX }) => {
                     <Animated.View
                         style={{
                             opacity,
+                            alignItems: 'center',
                             flexDirection: 'row',
                         }}
                     >
                         <Ionicons name="caret-up-circle" size={32} color="#FFF500" />
-                        <Text>{item.info}</Text>
+                        <Text style={{ marginRight: 30 }}>{item.info}</Text>
                     </Animated.View>
                 )}
             />}
@@ -111,7 +112,7 @@ const Info = ({ data, inputRange, scrollX }) => {
                         }}
                     >
                         <Ionicons name="close-circle" size={32} color="#FF0000" />
-                        <Text>{item.info}</Text>
+                        <Text style={{ marginRight: 30 }}>{item.info}</Text>
                     </Animated.View>
                 )}
             />}
@@ -234,7 +235,7 @@ const ImageList = ({ data, scrollX, token }) => {
                                 <Image
                                     style={styles.poseImage}
                                     source={{ 
-                                        uri: `http://${SERVER_IP}:80/get-image/${item.image}_${index}`,
+                                        uri: `http://${SERVER_IP}:80/get-image/${item.image}_${index - 1}`,
                                         headers: {
                                             'Authorization': `Bearer ${token}`
                                         }
@@ -305,7 +306,10 @@ const FeedbackScreen = ({ navigation, route }) => {
                                                     }
                                                 }
                                             )
-                                            .then(res => console.log(res))
+                                            .then(res => {
+                                                console.log(res.data);
+                                                navigation.navigate('Social');
+                                            })
                                             .catch(error => {
                                                 if (error.response) {
                                                     // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.

@@ -7,7 +7,7 @@ import  {
 } from "react-native";
 
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Icon from 'react-native-vector-icons/Ionicons';
+import { Ionicons, AntDesign, MaterialIcons  } from '@expo/vector-icons';
 
 import CameraStackNavigator from './Main/CameraStackNavigator';
 import UserSwingDataScreen from '../Screens/Main/UserSwingDataScreen';
@@ -42,7 +42,8 @@ const MainNavigator = () => {
           inactiveTintColor: 'gray',
           style: {
             height: 70,
-          }
+          },
+          keyboardHidesTabBar: true
         }} 
     >
       <MainStack.Screen name = "UserSwingData" component ={UserSwingDataScreen} 
@@ -51,11 +52,12 @@ const MainNavigator = () => {
           tabBarIcon: ({ focused, color }) => {
             if (focused) {
               return (
-                <Icon name="bar-chart" size={30} color={color} />
+                // <Ionicons name="bar-chart" size={30} color={color} />
+                <MaterialIcons name="insert-chart" size={30} color={color} />
               )
             } else {
               return (
-                <Icon name="bar-chart-outline" size={30} color={color} />
+                <MaterialIcons name="insert-chart-outlined" size={30} color={color} />
               )
             }
           },
@@ -68,8 +70,8 @@ const MainNavigator = () => {
           title: "",
           tabBarIcon: ({color, size, focused}) => (
             <CameraButton focused={focused} />
-          )
-          , tabBarVisible: false 
+          ), 
+          tabBarVisible: false 
         }}
       />
       
@@ -79,14 +81,15 @@ const MainNavigator = () => {
           tabBarIcon: ({ focused, color }) => {
             if (focused) {
               return (
-                <Icon name="md-people" size={30} color={color} />
+                <Ionicons name="md-people" size={30} color={color} />
               )
             } else {
               return (
-                <Icon name="md-people-outline" size={30} color={color} />
+                <Ionicons name="md-people-outline" size={30} color={color} />
               )
             }
           },
+          // tabBarVisible: false,
         }}  
       />
     </MainStack.Navigator>

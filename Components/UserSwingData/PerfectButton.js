@@ -1,16 +1,22 @@
 import react from 'react';
 import React from 'react';
-import { View, StyleSheet, Text, Animated } from 'react-native';
+import { View, StyleSheet, Text, Animated, Dimensions } from 'react-native';
 import { TouchableHighlight } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const POSE_NAME = ["Address", "Take Away", "Back Swing", "Top", "Down Swing", "Impact", "Release", "Finish"];
+import { POSE_NAME } from '../../constants';
+
+const { width, height } = Dimensions.get('window');
 
 export default class PerfectButton extends React.Component{
     render(){
         const { data } = this.props;
         return(
-            <View style={{position:'relative'}} >
+            <View style={{
+                // position:'relative'
+                justifyContent: 'center',
+                alignItems: 'center',
+            }} >
                 <Animated.View style ={styles.button}>
                     <Text style ={styles.Text}>
                         {POSE_NAME[data].charAt(0).toUpperCase()}
@@ -22,7 +28,7 @@ export default class PerfectButton extends React.Component{
                         marginLeft:7, 
                         marginTop:8,
                         textAlign:"center",
-                        fontSize:10,
+                        fontSize: 13,
                         color:"#0066FF",
                         fontWeight:'bold'}}>
 
@@ -40,13 +46,13 @@ const styles = StyleSheet.create({
         backgroundColor:"#0066FF",
         alignItems:"center",
         justifyContent:"center",
-        width: 67,
-        height: 67,
+        width: width / 8,
+        height: width / 8,
         borderRadius: 100,
-        shadowOffset:{height:10},
+        // shadowOffset:{height:10},
         borderWidth:9,
         borderColor:'#DAE9FF',
-        marginLeft:10,
+        // marginLeft:10,
     },
     
     Text:{

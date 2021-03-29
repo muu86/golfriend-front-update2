@@ -17,34 +17,148 @@ import {
 } from "react-native";
 import axios from 'axios';
 import { Video, AVPlaybackStatus } from 'expo-av';
-import { Ionicons } from 'react-native-vector-icons';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import AuthContext from '../../Context/AuthContext';
 
-const SERVER_IP = "121.138.83.4"; 
+import { SERVER_IP, DATE_FORMAT } from '../../constants';
 
-const Social = ({ data, token }) => {
+const Social = ({ data, token, refresh, setRefresh }) => {
     const video = useRef();
     const [ status, setStatus ] = useState({});
 
+    // 날짜 데이터 포맷
+    const dateList = data.date.split('-').map((item, index) => (
+        data.date.split('-')[index] + DATE_FORMAT[index]
+    ));
+
     const [comment, onChangeComment] = useState(null);
+    useEffect(() => console.log(comment), [comment]);
+
+    const [comments, setComments] = useState(null);
+    // console.log('console.log data')
+    // console.log(data);
+    useEffect(() => setComments(data.comments));
+    
+    // console.log(data.likes);
 
     const [like, setLike] = useState(false);
+    useEffect(() => {
+        (async () => {
+            await axios.get(
+                `http://${SERVER_IP}:80/get-social-video-likes`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                }
+                )
+                .then(res => {
+                    if (res.data.likes.includes(data.videoName)) {
+                        setLike(true);
+                    }
+                })
+            })();
+        }, [like]);
+    
+    const [likesCounts, setLikesCounts] = useState(data.likes.length);
+    // useEffect(() => {
+    //     (async () => {
+    //         await axios.get(
+    //             `http://${SERVER_IP}:80/get-social-video-likes`,
+    //         )
+    //     })
+    //     .then(res => setLikesCounts(res.data));
+    // })
+        
     const sendLike = async () => {
         await axios.get(
-            `http://${SERVER_IP}:80/like?type=plus&name=${data.videoName}`, {
+            `http://${SERVER_IP}:80/update-like?type=plus&name=${data.videoName}`, 
+            {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             }    
         )
-        .then(res => console.log(res))
-        .catch(error)
+        .then(res => {
+            setLikesCounts(res.data.counts);
+            console.log(likeCounts);
+        })
+        .catch(error => console.log(error));
+
+        setLike(true);
     }
 
     const sendCancelLike = async () => {
-        await axios.get(`http://${SERVER_IP}:80/like?type=minus&name=${data.videoName}`)
-        .then(res => console.log(res))
-        .catch(error)
+        await axios.get(
+            `http://${SERVER_IP}:80/update-like?type=minus&name=${data.videoName}`, 
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        )
+        .then(res => {
+            setLikesCounts(res.data.counts);
+        })
+        .catch(error => {
+            console.log(error)
+            if (error.response) {
+                // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            }
+            else if (error.request) {
+            // 요청이 이루어 졌으나 응답을 받지 못했습니다.
+            // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
+            // Node.js의 http.ClientRequest 인스턴스입니다.
+            console.log(error.request);
+            }
+            else {
+            // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
+            console.log('Error', error.message);
+            }
+            console.log(error.config);
+        });
+
+        setLike(false);
+    }
+
+    const sendComment = async () => {
+        await axios.post(
+            `http://${SERVER_IP}:80/post-comment`,
+            { 
+                "comment": comment,
+                "videoName": data.videoName,
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            }
+        )
+        .catch(error => {
+            if (error.response) {
+                // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.
+                console.log(error.response.data);
+                console.log(error.response.status);
+                console.log(error.response.headers);
+            }
+            else if (error.request) {
+            // 요청이 이루어 졌으나 응답을 받지 못했습니다.
+            // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
+            // Node.js의 http.ClientRequest 인스턴스입니다.
+            console.log(error.request);
+            }
+            else {
+            // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
+            console.log('Error', error.message);
+            }
+            console.log(error.config);
+        })
+
+        setRefresh(!refresh);
+        onChangeComment(null);
     }
 
     return (
@@ -54,23 +168,33 @@ const Social = ({ data, token }) => {
                     flexDirection:"row",
                     marginBottom:10,
                     alignItems: 'center',
-                    justifyContent: 'space-around'
+                    justifyContent: 'flex-start'
                 }}
             >
-                {/* <View style={styles.userIcon} /> */}
-                <Text 
-                    style={{
-                        fontSize: 20,
-                        fontWeight: 'bold',
-                        marginLeft:10,
-                        // marginTop:10
+                <View 
+                    style={{ 
+                        flex: 1,
+                        flexDirection: 'row',
+                        justifyContent: 'flex-start',
+                        alignItems: 'center',
+                        marginHorizontal: 10,
                     }}
                 >
-                    {data.userName}
-                </Text>
-                <Text style={{ fontSize: 10, textAlignVertical: 'bottom' }}>님의 스윙영상</Text>
-                <Text>
-                    {data.date}
+                    {/* <View style={styles.userIcon} /> */}
+                    <Text 
+                        style={{
+                            fontSize: 20,
+                            fontWeight: 'bold',
+                            marginLeft:10,
+                            // marginTop:10
+                        }}
+                    >
+                        {data.email}
+                    </Text>
+                    <Text style={{ fontSize: 10, textAlignVertical: 'bottom' }}>님의 스윙영상</Text>
+                </View>
+                <Text style={{ marginHorizontal: 10 }}>
+                    {dateList}
                 </Text>
             </View>
 
@@ -93,8 +217,9 @@ const Social = ({ data, token }) => {
                 </View>
 
                 <View style ={styles.iconContainer}> 
+                    {/* 좋아요 버튼 */}
                     <TouchableOpacity 
-                        onPress={like ? sendLike : sendCancelLike}
+                        onPress={!like ? sendLike : sendCancelLike}
                     >
                         <Ionicons 
                             name=
@@ -115,31 +240,61 @@ const Social = ({ data, token }) => {
                             style={{ marginLeft:10, marginTop:5 }}
                         />
                     </TouchableOpacity>
+                    {/* 코멘트 버튼 */}
                     <TouchableOpacity 
                         // onPress ={()=> {navigation.navigate('CommentScreen')}}
                     >
                         <Ionicons name="chatbubbles-outline" size={30}style={{marginLeft:10,marginTop:5}}/>
                     </TouchableOpacity>
+                    {/* 공유 버튼 */}
                     <TouchableOpacity>
                         <Ionicons name ="ios-share-social" size ={30}style={{marginLeft:280,marginTop:5}}/>
                     </TouchableOpacity>
                 </View>
 
-                <View style={{ flexDirection: 'row', marginHorizontal: 22, justifyContent: 'flex-start' }}>
-                    <Text style={{ fontSize: 15, fontWeight: 'bold' }}>{data.likes}</Text>
-                    <Text style={{ marginLeft:10, textAlignVertical: 'bottom' }}> 
+                <View style={{ flexDirection: 'row', marginHorizontal: 20, marginBottom: 15, justifyContent: 'flex-start' }}>
+                    <Text style={{ fontSize: 16, fontWeight: 'bold' }}>{likesCounts}</Text>
+                    {/* <Text>{likesCounts}</Text> */}
+                    <Text style={{ marginLeft:10, textAlignVertical: 'bottom', fontSize: 16, fontWeight: 'bold' }}> 
                         {/* { like }  */}
                         Likes
                     </Text>
                 </View>
+                {data.comments.map((item, index) => (
+                    <View key={index} style={{ flexDirection: 'row' }}>
+                        <Text style={{ fontWeight: 'bold', marginHorizontal: 20 }}>{item.email}</Text>
+                        <Text>{item.comment}</Text>
+                    </View>
+                ))}
+                <KeyboardAvoidingView>
+                    <View
+                        style={{ flexDirection: 'row', justifyContent: 'space-between' }}
+                    >
+                        <TextInput
+                            style={{ marginLeft: 20, flex: 1, height: 50}}
+                            value={comment}
+                            onChangeText={onChangeComment}
+                            multiline
+                            placeholder={"코멘트 남기기~"}
+                        >
 
-                <FlatList 
+                        </TextInput>
+                        <TouchableOpacity 
+                            style={{ marginHorizontal: 20 }}
+                            onPress={sendComment}
+                        >
+                            <FontAwesome name="send-o" size={20} color="black" />
+                        </TouchableOpacity>
+                    </View>
+                </KeyboardAvoidingView>
+
+                {/* <FlatList 
                     style={styles.ScrollViewBox}
                 >
                     {/* {DATA.map((item, index) => ({item[0]}))}  */}
                     
                     {/* <KeyboardAvoidingView> */}
-                        <View style ={styles.CommentContainer}>
+                        {/* <View style ={styles.CommentContainer}>
                             <View style ={{flex:1}}>
                                 <TouchableOpacity 
                                     // onPress={Keyboard.dismiss} 
@@ -161,35 +316,38 @@ const Social = ({ data, token }) => {
                                 </TouchableOpacity>
                             
                             </View>
-                                {/* {commentList} */}
+                                {commentList}
                     
-                        </View>
+                        </View> */}
 
                     {/* </KeyboardAvoidingView>                    */}
-                </FlatList>
+                {/* </FlatList> */}
             </View>
     )
 }
 
-const SocialScreen = () =>{
+const SocialScreen = ({ navigation }) =>{
     const [token, setToken] = useState(null);
     const { getJWT } = useContext(AuthContext);
     useEffect(() => {
-        (async () => {
-            setToken(getJWT());
-        })();
+        setToken(getJWT());
     }, []);
 
     const [data, setData] = useState(null);
     const [index, setIndex] = useState(0);
+    // Social 컴포넌트에게 넘겨줘서 SocialScreen 업데이트 하게 만든다.
+    const [refresh, setRefresh] = useState(true);
     useEffect(() => {
         (async () => {
             await axios.get(`http://${SERVER_IP}:80/get-social?index=${index}`)
             .then(res => {
                 setData(res.data.socialData);
+                console.log('-----------------');
                 console.log(data);
+                console.log('-----------------');
             })
             .catch(error => {
+                console.log('===========error===============');
                 if (error.response) {
                     // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.
                     console.log(error.response.data);
@@ -209,14 +367,20 @@ const SocialScreen = () =>{
                   console.log(error.config);
             });
         })();
-    }, []);
+    }, [refresh]);
 
     return(
         <View style={styles.maincontainer}> 
             <StatusBar backgroundColor ={"#FFF"} barStyle={"dark-content"}></StatusBar>
+            <View style ={{flexDirection:"row",marginTop:20}}>
+                <Text style={styles.Text}>Golfriend</Text>
+                <TouchableOpacity onPress={()=>navigation.goBack()}>
+                        <Ionicons style={{marginLeft:200, marginTop:43}} name = 'arrow-back' size ={25} color ={'#000'} />
+                </TouchableOpacity>
+            </View>         
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
                 {data && data.map((item, index) => (
-                    <Social key={index} data={item} token={token} />
+                    <Social key={index} data={item} token={token} refresh={refresh} setRefresh={setRefresh} />
                 ))}
             </ScrollView>
         </View>
@@ -255,10 +419,10 @@ const styles = StyleSheet.create({
     },
     InstaContainer:{
         width:"100%",
-        height:650,
-        marginTop:15,
+        // height:650,
+        marginTop: 20,
         borderBottomWidth:1,
-        marginBottom:30
+        marginBottom: 30,
     },
     instaVideoContainer:{
         width:"100%",
