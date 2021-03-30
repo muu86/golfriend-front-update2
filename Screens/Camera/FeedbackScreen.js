@@ -57,7 +57,10 @@ const Info = ({ data, inputRange, scrollX }) => {
                     }));
     
     return (
-        <ScrollView style={{ marginTop: 10, }}>
+        <ScrollView  
+            showsVerticalScrollIndicator={false}
+            style={{ marginTop: 10, }}
+        >
             {good && <Animated.FlatList
                 data={good}
                 keyExtractor={item => item.key.toString()}
@@ -73,7 +76,7 @@ const Info = ({ data, inputRange, scrollX }) => {
                         }}
                     >
                         <Ionicons name="checkmark-circle" size={32} color="#73E681" />
-                        <Text style={{ marginRight: 30 }}>{item.info}</Text>
+                        <Text style={{ marginRight: 30, marginVertical: 10, lineHeight: 20 }}>{item.info}</Text>
                     </Animated.View>
                 )}
             />}
@@ -93,7 +96,7 @@ const Info = ({ data, inputRange, scrollX }) => {
                         }}
                     >
                         <Ionicons name="caret-up-circle" size={32} color="#FFF500" />
-                        <Text style={{ marginRight: 30 }}>{item.info}</Text>
+                        <Text style={{ marginRight: 30, marginVertical: 10, lineHeight: 20 }}>{item.info}</Text>
                     </Animated.View>
                 )}
             />}
@@ -109,10 +112,11 @@ const Info = ({ data, inputRange, scrollX }) => {
                         style={{
                             opacity,
                             flexDirection: 'row',
+                            alignItems: 'center',
                         }}
                     >
                         <Ionicons name="close-circle" size={32} color="#FF0000" />
-                        <Text style={{ marginRight: 30 }}>{item.info}</Text>
+                        <Text style={{ marginRight: 30, marginVertical: 10, lineHeight: 20 }}>{item.info}</Text>
                     </Animated.View>
                 )}
             />}

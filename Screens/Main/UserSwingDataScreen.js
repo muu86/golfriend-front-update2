@@ -13,6 +13,7 @@ import {
     SafeAreaView,
     Alert,
 } from "react-native";
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { ScrollView } from "react-native-gesture-handler";
 import { Ionicons, FontAwesome, AntDesign, Feather } from 'react-native-vector-icons';
@@ -66,8 +67,7 @@ const ProfileModal = ({ modalVisible, setModalVisible }) => {
 };
 
 const UserSwingDataScreen = ({ navigation }) => {
-    // const { width, height } = Dimensions.get('window');
-    
+    const isFocused = useIsFocused();
     const [modalVisible, setModalVisible] = useState(false);
     const { signOut, getJWT } = useContext(AuthContext);
 
@@ -77,7 +77,7 @@ const UserSwingDataScreen = ({ navigation }) => {
         setToken(userToken);
         console.log("token useEffect!!!")
         console.log(token);
-    }, []);
+    }, [isFocused]);
 
     const [userInfo, setUserInfo] = useState(null);
     useEffect(() => {
@@ -115,7 +115,7 @@ const UserSwingDataScreen = ({ navigation }) => {
                 console.log(error.config);
             });
         })();
-    }, [token])
+    }, [token, isFocused])
 
     const [data, setData] = useState([]);
     // 몽고디비 배열 데이터에서 몇 번째 스윙 데이터를 가져오는지 정하는 index
@@ -148,7 +148,7 @@ const UserSwingDataScreen = ({ navigation }) => {
                     }
                     return;
                 } 
-                setData(data.concat([res.data]));
+                setData([res.data].concat(data));
                 // console.log(data);
             })
             // 토큰 유효기간이 지나 401 에러뜨면 자동 로그 아웃
@@ -162,8 +162,10 @@ const UserSwingDataScreen = ({ navigation }) => {
         })();
         console.log("최근 분석 useEffect 실행");
 
+        
+
         // 데이터를 가져왔으면 index를 1씩 증가시켜줌
-    }, [index, token]);
+    }, [index, token, isFocused]);
 
     // // 서버에서 가져온 데이터 확인용 Effect
     // useEffect(() => {
@@ -171,8 +173,6 @@ const UserSwingDataScreen = ({ navigation }) => {
     //         console.log(typeof data.swingData);
     //     }
     // }, [data]);
-
-
 
     return (
         <View style={styles.maincontainer}>
@@ -243,14 +243,15 @@ const UserSwingDataScreen = ({ navigation }) => {
                     <TouchableOpacity
                         style={{
                             flex: 0.1,
-                            marginHorizontal: 20,
+                            marginLeft:-100
                         }}
-                        onPress={() => { setModalVisible(true) }}
+                        onPress={() => {navigation.navigate('Profile', { userName: userInfo.userName })}}
                     >
-                        <FontAwesome 
+                        <FontAwesome
                             name={'user'}
                             size={30}
                             color={'#000'}
+                            
                         />
                     </TouchableOpacity>
                     <ProfileModal modalVisible={modalVisible} setModalVisible={setModalVisible} />

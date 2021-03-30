@@ -1,23 +1,19 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
-    NativeAppEventEmitter, 
-    Share,
     StatusBar, 
     TouchableOpacity, 
-    Dimensions, 
-    SafeAreaView,
     StyleSheet, 
     View, 
     Text,
     ScrollView,
     KeyboardAvoidingView,  
-    Keyboard,
     TextInput,
-    FlatList
+    Alert
 } from "react-native";
+import { useIsFocused } from '@react-navigation/native';
 import axios from 'axios';
 import { Video, AVPlaybackStatus } from 'expo-av';
-import { Ionicons, FontAwesome } from '@expo/vector-icons';
+import { Ionicons, FontAwesome, Feather } from '@expo/vector-icons';
 import AuthContext from '../../Context/AuthContext';
 
 import { SERVER_IP, DATE_FORMAT } from '../../constants';
@@ -31,13 +27,15 @@ const Social = ({ data, token, refresh, setRefresh }) => {
         data.date.split('-')[index] + DATE_FORMAT[index]
     ));
 
-    const [comment, onChangeComment] = useState(null);
-    useEffect(() => console.log(comment), [comment]);
+    const [comment, onChangeComment] = useState('');
+    // useEffect(() => console.log(comment), [comment]);
 
     const [comments, setComments] = useState(null);
     // console.log('console.log data')
     // console.log(data);
-    useEffect(() => setComments(data.comments));
+    useEffect(() => { 
+        setComments(data.comments);
+    });
     
     // console.log(data.likes);
 
@@ -125,6 +123,11 @@ const Social = ({ data, token, refresh, setRefresh }) => {
     }
 
     const sendComment = async () => {
+        // if (String(comment).length === 0) {
+        //     Alert.alert('하나 이상의 글자를 입력해주세요.');
+        //     onChangeComment(null);
+        //     return;
+        // }
         await axios.post(
             `http://${SERVER_IP}:80/post-comment`,
             { 
@@ -191,9 +194,9 @@ const Social = ({ data, token, refresh, setRefresh }) => {
                     >
                         {data.email}
                     </Text>
-                    <Text style={{ fontSize: 10, textAlignVertical: 'bottom' }}>님의 스윙영상</Text>
+                    {/* <Text style={{ fontSize: 10, textAlignVertical: 'bottom' }}>님의 스윙영상</Text> */}
                 </View>
-                <Text style={{ marginHorizontal: 10 }}>
+                <Text style={{ marginHorizontal: 10, alignSelf: 'flex-end' }}>
                     {dateList}
                 </Text>
             </View>
@@ -333,7 +336,9 @@ const SocialScreen = ({ navigation }) =>{
         setToken(getJWT());
     }, []);
 
-    const [data, setData] = useState(null);
+    const isFocused = useIsFocused();
+
+    const [data, setData] = useState([]);
     const [index, setIndex] = useState(0);
     // Social 컴포넌트에게 넘겨줘서 SocialScreen 업데이트 하게 만든다.
     const [refresh, setRefresh] = useState(true);
@@ -341,10 +346,19 @@ const SocialScreen = ({ navigation }) =>{
         (async () => {
             await axios.get(`http://${SERVER_IP}:80/get-social?index=${index}`)
             .then(res => {
-                setData(res.data.socialData);
-                console.log('-----------------');
+                console.log('--------------------------');
+                if (res.data === "no more data") {
+                    Alert.alert('데이터가 없습니다.');
+                    if (index >= 1) {
+                        setIndex(index - 1);
+                    }
+                    return;
+                }
+                console.log(res.data.socialData);
+                setData(res.data.socialData.concat(data));
+                // console.log(data);
+                console.log('-----------data--------------')
                 console.log(data);
-                console.log('-----------------');
             })
             .catch(error => {
                 console.log('===========error===============');
@@ -367,7 +381,7 @@ const SocialScreen = ({ navigation }) =>{
                   console.log(error.config);
             });
         })();
-    }, [refresh]);
+    }, [refresh, isFocused, index]);
 
     return(
         <View style={styles.maincontainer}> 
@@ -379,9 +393,22 @@ const SocialScreen = ({ navigation }) =>{
                 </TouchableOpacity>
             </View>         
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-                {data && data.map((item, index) => (
+                {data[0] && data.map((item, index) => (
                     <Social key={index} data={item} token={token} refresh={refresh} setRefresh={setRefresh} />
                 ))}
+
+                {/* 더 불러오기 버튼 */}
+                <TouchableOpacity
+                    style={{ flexDirection: 'row', justifyContent:'space-around', height: 30, backgroundColor: 'gainsboro', alignItems: 'center'}}
+                    onPress={() => {
+                        setIndex(index + 1)
+                        console.log(index);
+                    }}
+                >   
+                    <Text>더 불러오기</Text>
+                    <Feather name="arrow-down" size={15} color="white" />
+                    <Feather name="arrow-down" size={15} color="white" />
+                </TouchableOpacity>
             </ScrollView>
         </View>
     );

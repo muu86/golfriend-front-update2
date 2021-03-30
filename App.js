@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 
 import { NavigationContainer } from '@react-navigation/native';
 import * as SecureStore from 'expo-secure-store';
@@ -13,6 +13,7 @@ import SplashScreen from './Screens/SplashScreen';
 import { createStackNavigator } from '@react-navigation/stack';
 
 import { SERVER_IP } from './constants';
+import RootStackNavigator from './Screens/RootStackNavigator';
 
 // 토큰 관리할 리듀서
 const tokenReducer = (prevState, action) => {
@@ -91,7 +92,7 @@ export default function App() {
       if (!userToken) { console.log('Token이 없어요'); }
       console.log(userToken);
 
-      dispatch({ type: 'RESTORE_TOKEN', token: userToken });
+      dispatch({ type: 'SIGN_OUT' });
     })();
   }, []);
 
@@ -99,16 +100,21 @@ export default function App() {
   const authContext = React.useMemo(
     () => ({
       signIn: async data => {
-        const result = await axios.post(`http://${SERVER_IP}:80/login`, {
+          const result = await axios.post(`http://${SERVER_IP}:80/login`, {
           email: data.email,
           password: data.password,
         })
         .catch(e => console.log(e));
         
+        if (result.data === "bad") {
+          Alert.alert('회원 정보를 확인해주세요');
+          return;
+        }
+
         console.log(result);
-        await SecureStore.setItemAsync('userToken', result.data);
-        dispatch({ type: 'SIGN_IN', token: result.data });
-        console.log('토큰이 저장되었습니다.');
+          await SecureStore.setItemAsync('userToken', result.data);
+          dispatch({ type: 'SIGN_IN', token: result.data });
+          console.log('토큰이 저장되었습니다.');
       },
       signOut: async () => {
         await SecureStore.deleteItemAsync('userToken');
@@ -149,7 +155,7 @@ export default function App() {
         {!state.userToken ? (
           <SignInNavigator />
           ) : (
-          <MainNavigator />
+          <RootStackNavigator />
         )}
       </NavigationContainer>
     </AuthContext.Provider>
