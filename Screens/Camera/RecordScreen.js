@@ -195,6 +195,7 @@ const RecordScreen = ({ navigation }) => {
         navigation.navigate('Feedback', {
             data: data,
             token: userToken,
+            videoUri: videoUri,
         })
     }
 

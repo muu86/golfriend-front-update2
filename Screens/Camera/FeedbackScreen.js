@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { Ionicons, AntDesign, Entypo } from '@expo/vector-icons';
 import axios from 'axios';
+import * as Sharing from 'expo-sharing';
 import AuthContext from '../../Context/AuthContext';
 
 import { SERVER_IP } from '../../constants';
@@ -267,9 +268,25 @@ const ImageList = ({ data, scrollX, token }) => {
 }
 
 const FeedbackScreen = ({ navigation, route }) => {
-    const { data, token } = route.params;
+    const { data, token, videoUri } = route.params;
     // const data = TEST_DATA;
     const scrollX = React.useRef(new Animated.Value(0)).current;
+
+    // 친구에게 공유 버튼 클릭 시
+    const share = async () => {
+        // 공유가 가능한지 체크
+        let sharingAvailable = await Sharing.isAvailableAsync();
+        if (!sharingAvailable) {
+            Alert.alert("현재 디바이스에서 공유가 불가합니다.");
+        }
+        Sharing.shareAsync(
+            videoUri,
+            {
+                mimeType: 'video/mp4',
+                dialogTitle: '스윙을 친구에게 공유하세요'
+            }
+        )
+    }
 
     React.useLayoutEffect(() => {
         navigation.setOptions({
@@ -277,7 +294,8 @@ const FeedbackScreen = ({ navigation, route }) => {
                 // 스택 헤더 공유 버튼
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     {/* 다른 앱에 공유 버튼 */}
-                    <TouchableOpacity 
+                    <TouchableOpacity
+                        onPress={share}
                         style={{ flexDirection: 'column', alignItems: 'center', marginHorizontal: 10 }}
                     >
                         <AntDesign name="sharealt" size={24} color="black" />

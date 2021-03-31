@@ -79,7 +79,7 @@ const Social = ({ data, token, refresh, setRefresh }) => {
         )
         .then(res => {
             setLikesCounts(res.data.counts);
-            console.log(likeCounts);
+            // console.log(likeCounts);
         })
         .catch(error => console.log(error));
 
@@ -348,7 +348,7 @@ const SocialScreen = ({ navigation }) =>{
             .then(res => {
                 console.log('--------------------------');
                 if (res.data === "no more data") {
-                    Alert.alert('데이터가 없습니다.');
+                    // Alert.alert('데이터가 없습니다.');
                     if (index >= 1) {
                         setIndex(index - 1);
                     }

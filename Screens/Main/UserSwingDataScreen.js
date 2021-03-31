@@ -72,11 +72,17 @@ const UserSwingDataScreen = ({ navigation }) => {
     const { signOut, getJWT } = useContext(AuthContext);
 
     const [token, setToken] = useState(null);
+    const [data, setData] = useState([]);
+    // 몽고디비 배열 데이터에서 몇 번째 스윙 데이터를 가져오는지 정하는 index
+    const [index, setIndex] = useState(0);
     useEffect(() => {
+        console.log('--------------------')
         let userToken = getJWT();
         setToken(userToken);
         console.log("token useEffect!!!")
         console.log(token);
+        setData([]);
+        setIndex(0);
     }, [isFocused]);
 
     const [userInfo, setUserInfo] = useState(null);
@@ -117,10 +123,21 @@ const UserSwingDataScreen = ({ navigation }) => {
         })();
     }, [token, isFocused])
 
-    const [data, setData] = useState([]);
-    // 몽고디비 배열 데이터에서 몇 번째 스윙 데이터를 가져오는지 정하는 index
-    const [index, setIndex] = useState(0);
+
+    // React.useLayoutEffect(() => {
+    //     setData([]);
+    //     setIndex(0);
+    // }, [isFocused])
     // 데이터 가져오는 useEffect
+    // useFocusEffect(
+    //     React.useCallback(() => {
+    //         return () => {
+    //             console.log('focusEffect')
+    //             setData([]);
+    //             setIndex(0);
+    //         }
+    //     })
+    // )
     useEffect(() => {
         
         (async () => {
@@ -140,14 +157,21 @@ const UserSwingDataScreen = ({ navigation }) => {
                 // console.log(res);
                 // console.log(res.data);
                 // console.log(res);
-                console.log('--------------------------');
+                console.log('----------swingData----------------');
+                // console.log(data);
                 if (res.data === "no more data") {
-                    Alert.alert('데이터가 없습니다.');
+                    // Alert.alert('데이터가 없습니다.');
                     if (index >= 1) {
                         setIndex(index - 1);
                     }
                     return;
-                } 
+                }
+                console.log(res.data.filePath);
+                // console.log(data[0].filePath);
+                if (res.data.filePath === ( data[-1] && data[-1].filePath )) {
+                    console.log('----------pass------------')
+                    return;
+                }
                 setData([res.data].concat(data));
                 // console.log(data);
             })
@@ -157,13 +181,26 @@ const UserSwingDataScreen = ({ navigation }) => {
                 if (error.response.status === 401) {
                     await signOut();
                 }
-                console.log(error);
+                if (error.response) {
+                    // 요청이 이루어졌으며 서버가 2xx의 범위를 벗어나는 상태 코드로 응답했습니다.
+                    console.log(error.response.data);
+                    console.log(error.response.status);
+                    console.log(error.response.headers);
+                }
+                else if (error.request) {
+                // 요청이 이루어 졌으나 응답을 받지 못했습니다.
+                // `error.request`는 브라우저의 XMLHttpRequest 인스턴스 또는
+                // Node.js의 http.ClientRequest 인스턴스입니다.
+                console.log(error.request);
+                }
+                else {
+                // 오류를 발생시킨 요청을 설정하는 중에 문제가 발생했습니다.
+                console.log('Error', error.message);
+                }
+                console.log(error.config);
             });
         })();
         console.log("최근 분석 useEffect 실행");
-
-        
-
         // 데이터를 가져왔으면 index를 1씩 증가시켜줌
     }, [index, token, isFocused]);
 
@@ -269,24 +306,30 @@ const UserSwingDataScreen = ({ navigation }) => {
                 
                 {/* 데이터를 받으면 개선 사항 뿌려줌 */}
                 {/* {data && <ProShotAndImprovement data={data.swingData} token={token} />} */}
-                {data[0] && data.map((item, index) => (
-                    <ProShotAndImprovement key={index} data={item} token={token} />
-                ))}
+                {data[0] && isFocused ? 
+                    data.map((item, index) => (
+                        <ProShotAndImprovement key={index} data={item} token={token} />
+                    )) : (
+                        <View style={{ flex: 1, alignSelf: 'center' }}>
+                            <Text>스윙을 분석하고 내 데이터를 기록해보세요.</Text>
+                        </View>
+                    )
+                }
                 
-                {/* 더 불러오기 버튼 */}
-                <TouchableOpacity
-                    style={{ flexDirection: 'row', justifyContent:'space-around', height: 30, backgroundColor: 'gainsboro', alignItems: 'center'}}
-                    onPress={() => {
-                        setIndex(index + 1)
-                        console.log(index);
-                    }}
-                >   
-                    <Text>더 불러오기</Text>
-                    <Feather name="arrow-down" size={15} color="white" />
-                    <Feather name="arrow-down" size={15} color="white" />
-                </TouchableOpacity>
-            </ScrollView>
 
+            </ScrollView>
+            {/* 더 불러오기 버튼 */}
+            <TouchableOpacity
+                style={{ flexDirection: 'row', justifyContent:'space-around', height: 30, backgroundColor: 'gainsboro', alignItems: 'center'}}
+                onPress={() => {
+                    setIndex(index + 1)
+                    console.log(index);
+                }}
+            >   
+                <Text>더 불러오기</Text>
+                <Feather name="arrow-down" size={15} color="white" />
+                <Feather name="arrow-down" size={15} color="white" />
+            </TouchableOpacity>
         </View>
     )
 };

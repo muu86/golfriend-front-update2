@@ -25,12 +25,7 @@ const EmailSignUpFormScreen = ({ navigation, route }) => {
     const { signUp } = useContext(AuthContext);
 
     const onSignUp = async () => {
-        const result = await signUp({ email, lastname, firstname, password });
-        if (result) {
-            navigation.navigate('LogIn')
-        } else {
-            Alert.alert('가입 실패')
-        }
+        await signUp({ email, lastname, firstname, password })
     }
 
     return (
